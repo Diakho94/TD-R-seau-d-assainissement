@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="M. DIAKHO - Lycée Professionnel | Académie de Versailles">
+    <title>Fiche Synthèse : Lecture de Plans de Bâtiment & Réseaux d'Assainissement | Bac Pro MELEC & MFER</title>
+    <style>
+        /* =========================================================================
+           STYLE GLOBAL FICHE SYNTHÈSE A4 (5 PAGES COMPLÈTES : SYNTHÈSE + DR)
+           Thème Bleu Industriel & Bâtiment (#1e3a8a / #2563eb / #0284c7)
+           ========================================================================= */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #525659;
+            color: #1e293b;
+            line-height: 1.35;
+        }
+
+        /* Barre d'action fixe en haut */
+        .actions-bar {
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+            max-width: 210mm;
+            margin: 0 auto 15px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 10px 18px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            color: white;
+        }
+
+        .actions-bar .btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .actions-bar .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .actions-bar .btn-secondary {
+            background: #475569;
+        }
+
+        .actions-bar .btn-secondary:hover {
+            background: #334155;
+        }
+
+        /* Format A4 Certifié */
+        .a4-page {
+            width: 210mm;
+            max-width: 210mm;
+            height: 297mm;
+            min-height: 297mm;
+            max-height: 297mm;
+            margin: 0 auto 20px auto;
+            padding: 7mm 11mm;
+            background: white;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* En-tête compact officiel */
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 6px;
+        }
+
+        .header-table td {
+            border: 1.5px solid #1e3a8a;
+            padding: 4px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .header-title {
+            background-color: #eef3fc;
+            font-size: 13px;
+            font-weight: 800;
+            color: #1e3a8a;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            line-height: 1.25;
+        }
+
+        .header-sub {
+            font-size: 10px;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        /* Sections encadrées */
+        .tech-box {
+            border: 1.5px solid #cbd5e1;
+            border-radius: 5px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
+            background: #ffffff;
+        }
+
+        .tech-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #1e3a8a;
+            text-transform: uppercase;
+            border-bottom: 1.5px solid #e2e8f0;
+            padding-bottom: 3px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge {
+            background: #2563eb;
+            color: white;
+            font-size: 9.5px;
+            font-weight: 700;
+            padding: 1.5px 5px;
+            border-radius: 3px;
+        }
+
+        /* Tableaux techniques */
+        .tech-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .tech-table th,
+        .tech-table td {
+            border: 1px solid #cbd5e1;
+            padding: 4px 6px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .tech-table th {
+            background-color: #f1f5f9;
+            color: #1e3a8a;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        /* Grilles & Flex */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+        }
+
+        /* Puces & Définitions */
+        ul {
+            margin: 2px 0;
+            padding-left: 16px;
+            font-size: 11px;
+        }
+
+        li {
+            margin-bottom: 2px;
+        }
+
+        /* Formules mathématiques claires sans LaTeX brut */
+        .math-formula {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 5px 8px;
+            text-align: center;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin: 4px 0;
+            font-size: 11.5px;
+        }
+
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+            padding: 0 4px;
+        }
+
+        .fraction-top {
+            border-bottom: 1.5px solid #1e3a8a;
+            display: block;
+            padding-bottom: 1px;
+        }
+
+        .fraction-bottom {
+            display: block;
+            padding-top: 1px;
+        }
+
+        /* Cadre Document Ressource plein format */
+        .resource-frame {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
+            background: #ffffff;
+            overflow: hidden;
+            margin: 4px 0;
+            padding: 4px;
+            position: relative;
+        }
+
+        .resource-frame img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        /* Pied de page A4 */
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-top: 1.5px solid #1e3a8a;
+            font-size: 10px;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 4px;
+            padding-top: 3px;
+        }
+
+        .footer-table td {
+            padding: 2px 4px;
+        }
+
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+
+            .actions-bar {
+                display: none !important;
+            }
+
+            .a4-page {
+                box-shadow: none;
+                margin: 0;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Barre d'action utilisateur -->
+    <div class="actions-bar">
+        <div style="font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            <span>FICHE SYNTHÈSE RESSOURCE</span>
+            <span style="font-size: 11.5px; color: #94a3b8; font-weight: normal;">| Bac Pro MELEC & Bac Pro MFER</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary" onclick="window.close()">Fermer la fiche</button>
+            <button class="btn" onclick="window.print()">Imprimer la Fiche (2 Pages A4)</button>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         PAGE 1 : LE DOSSIER ARCHITECTURAL, LES ÉCHELLES & LA COTATION
+         ========================================================================= -->
+    <div class="a4-page" id="page-synthese-1">
+        <div>
+            <!-- En-tête officiel -->
+            <table class="header-table">
+                <tr>
+                    <td style="width: 25%; font-weight: 800; font-size: 11px; background: #f8fafc; color: #1e3a8a; line-height: 1.3;">
+                        Lycée Professionnel<br>
+                        <span style="font-size: 10px; color: #475569; font-weight: 600;">Académie de Versailles</span><br>
+                        <span style="font-size: 11px; color: #0284c7; font-weight: 700;">Bac Pro MELEC & MFER</span>
+                    </td>
+                    <td style="width: 50%;" class="header-title">
+                        FICHE TECHNIQUE SYNTHÈSE : DOSSIER ARCHITECTURAL DU BÂTIMENT<br>
+                        <span class="header-sub">Plans, Coupes, Façades, Cotations & Échelles</span>
+                    </td>
+                    <td style="width: 25%; font-size: 11px; background: #f8fafc; line-height: 1.3;">
+                        <strong>M. DIAKHO</strong>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- 1. Les différents types de plans architecturaux -->
+            <div class="tech-box">
+                <div class="tech-title"><span class="badge">1</span> Les Plans du Dossier Architectural</div>
+                <table class="tech-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 32%;">Document</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Plan de situation (ou localisation)</strong></td>
+                            <td>Situe le terrain dans la commune ou le quartier.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Plan de masse</strong></td>
+                            <td>Montre l'implantation du bâtiment sur le terrain, ses limites et l'orientation (Nord).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Plans de niveaux (Sous-sol, RDC, Étage)</strong></td>
+                            <td>Vue de dessus montrant la disposition des pièces, des murs, des portes et des fenêtres.</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Plan de façades</strong></td>
+                            <td>Vue extérieure montrant l'aspect du bâtiment (façades, toiture, ouvertures).</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Coupe (ex. Coupe A-A)</strong></td>
+                            <td>Vue verticale montrant l'intérieur du bâtiment, les hauteurs sous plafond et les escaliers.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 2. Les Échelles et Calculs de Conversion -->
+            <div class="tech-box">
+                <div class="tech-title"><span class="badge">2</span> Échelles Graphiques & Règles de Conversion</div>
+                <div class="grid-2">
+                    <div style="font-size: 11px; background: #f8fafc; padding: 6px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                        <strong style="color: #1e3a8a;">Exemple concret : Trouver la valeur en cm à partir d'une échelle</strong><br>
+                        Lorsqu'une échelle est notée sous la forme <strong>1 : N</strong> (ou <strong>1 / N</strong>) :
+                        <ul style="margin: 3px 0 5px 0; padding-left: 15px;">
+                            <li>Le chiffre <strong>1</strong> correspond à <strong>1 cm mesuré sur le plan</strong>.</li>
+                            <li>Le nombre <strong>N</strong> donne directement la <strong>valeur réelle en centimètres (cm)</strong> sur le terrain.</li>
+                        </ul>
+                        <div style="background: #eef2ff; border-left: 3px solid #2563eb; padding: 4px 6px; margin: 3px 0; border-radius: 2px;">
+                            <strong>Exemple :</strong> Pour une échelle <strong>1 : 200</strong> (ou <strong>1 / 200</strong>) :<br>
+                            &bull; <strong>1 cm sur le plan</strong> correspond à <strong>200 cm sur le terrain</strong> (soit 2,00 m).<br>
+                            &bull; Si on mesure <strong>3 cm sur le plan</strong> &rarr; Valeur réelle = 3 &times; 200 cm = <strong>600 cm</strong> (soit 6,00 m).
+                        </div>
+                    </div>
+                    <div style="font-size: 11px; background: #f8fafc; padding: 6px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                        <strong style="color: #1e3a8a;">Tableau de correspondance (1 cm sur le plan) :</strong>
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 10px;">
+                            <thead>
+                                <tr style="background: #e2e8f0; color: #1e3a8a;">
+                                    <th style="padding: 2.5px 4px; border: 1px solid #cbd5e1; text-align: center; width: 26%;">Échelle</th>
+                                    <th style="padding: 2.5px 4px; border: 1px solid #cbd5e1; text-align: left;">1 cm sur le plan équivaut à...</th>
+                                    <th style="padding: 2.5px 4px; border: 1px solid #cbd5e1; text-align: center; width: 24%;">En mètres</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;">1 : 50</td>
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1;"><strong>50 cm</strong> sur le terrain</td>
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1; text-align: center;">0,50 m</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;">1 : 100</td>
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1;"><strong>100 cm</strong> sur le terrain</td>
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1; text-align: center;">1,00 m</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;">1 : 200</td>
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1;"><strong>200 cm</strong> sur le terrain</td>
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1; text-align: center;">2,00 m</td>
+                                </tr>
+                                <tr style="background: #f1f5f9;">
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700;">1 : N</td>
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1;"><strong>N centimètres</strong> sur le terrain</td>
+                                    <td style="padding: 2.5px 4px; border: 1px solid #cbd5e1; text-align: center;">N / 100 m</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="font-size: 9.5px; color: #475569; margin-top: 3px;">
+                            <em>Formule : <strong>Dimension réelle (cm) = Dimension mesurée (cm) &times; N</strong></em>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. Éléments constructifs & Vocabulaire de structure -->
+            <div class="tech-box">
+                <div class="tech-title"><span class="badge">3</span> Structure Porteuse & Éléments du Gros Œuvre</div>
+                <div class="grid-3" style="font-size: 11px;">
+                    <div style="background: #f1f5f9; padding: 5px 7px; border-radius: 4px;">
+                        <strong style="color: #1e3a8a;">Murs porteurs périphériques :</strong><br>
+                        Murs extérieurs épais (béton banché, agglomérés ou briques) qui reprennent les charges de la charpente et des planchers.
+                    </div>
+                    <div style="background: #f1f5f9; padding: 5px 7px; border-radius: 4px;">
+                        <strong style="color: #1e3a8a;">Murs de refend :</strong><br>
+                        Murs porteurs intérieurs épais qui divisent les portées des planchers et transmettent les charges verticales aux fondations.
+                    </div>
+                    <div style="background: #f1f5f9; padding: 5px 7px; border-radius: 4px;">
+                        <strong style="color: #1e3a8a;">Cloisons de distribution :</strong><br>
+                        Parois minces non porteuses (plaques de plâtre, briques plâtrières) séparant les pièces de vie.
+                    </div>
+                </div>
+                <div style="margin-top: 5px; font-size: 11px; background: #eff6ff; padding: 5px 8px; border-radius: 4px; border: 1px solid #bfdbfe;">
+                    <strong>Planchers & Dalles :</strong> Les planchers d'étage sont généralement constitués de poutrelles précontraintes, hourdis et dalle de compression en béton armé. L'épaisseur se relève directement sur la ligne de cote de la coupe verticale.
+                </div>
+            </div>
+
+            <!-- 4. Cotation de niveau et altimétrie -->
+            <div class="tech-box" style="margin-bottom: 0;">
+                <div class="tech-title"><span class="badge">4</span> Cotation Altimétrique & Repérage des Niveaux</div>
+                <p style="margin: 0 0 4px 0; font-size: 11px;">
+                    Les cotes de niveau indiquent l'altitude d'un point par rapport à un plan de référence coté <strong>± 0,00 m</strong> (généralement le sol fini du Rez-de-chaussée).
+                </p>
+                <div class="grid-3" style="font-size: 11px; text-align: center;">
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px;">
+                        <strong style="color: #dc2626;">Cotes négatives ( - ) :</strong><br>
+                        Points situés en dessous du niveau de référence (ex. sous-sol, fondations, terrain décaissé).
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px;">
+                        <strong style="color: #2563eb;">Niveau de référence ( ± 0,00 m ) :</strong><br>
+                        Sol fini du rez-de-chaussée, servant d'origine de mesure altimétrique.
+                    </div>
+                    <div style="background: #f8fafc; border: 1px solid #cbd5e1; padding: 4px; border-radius: 4px;">
+                        <strong style="color: #16a34a;">Cotes positives ( + ) :</strong><br>
+                        Points situés au-dessus de la référence (planchers hauts, combles, faîtage de toiture).
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pied de page -->
+        <table class="footer-table">
+            <tr>
+                <td style="width: 50%;">Lycée Professionnel — Enseignement Technique MELEC / MFER</td>
+                <td style="width: 50%; text-align: right;">Page 1 / 2 — Fiche Synthèse : Dossier Architectural</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- =========================================================================
+         PAGE 2 : MENUISERIES, ESCALIERS & RÉSEAU D'ASSAINISSEMENT
+         ========================================================================= -->
+    <div class="a4-page" id="page-synthese-2">
+        <div>
+            <!-- En-tête officiel -->
+            <table class="header-table">
+                <tr>
+                    <td style="width: 25%; font-weight: 800; font-size: 11px; background: #f8fafc; color: #1e3a8a; line-height: 1.3;">
+                        Lycée Professionnel<br>
+                        <span style="font-size: 10px; color: #475569; font-weight: 600;">Académie de Versailles</span><br>
+                        <span style="font-size: 11px; color: #0284c7; font-weight: 700;">Bac Pro MELEC & MFER</span>
+                    </td>
+                    <td style="width: 50%;" class="header-title">
+                        FICHE TECHNIQUE SYNTHÈSE : OUVRANTS, ESCALIERS & ASSAINISSEMENT<br>
+                        <span class="header-sub">Menuiseries, Géométrie des Marches, Canalisations EU / EV / EP</span>
+                    </td>
+                    <td style="width: 25%; font-size: 11px; background: #f8fafc; line-height: 1.3;">
+                        <strong>M. DIAKHO</strong>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- 5. Sens d'ouverture des portes et baies -->
+            <div class="tech-box">
+                <div class="tech-title"><span class="badge">5</span> Menuiseries, Baies & Sens d'Ouverture des Portes</div>
+                <div class="grid-2" style="font-size: 11px;">
+                    <div>
+                        <strong style="color: #1e3a8a;">Règle normalisée des portes battantes :</strong><br>
+                        Pour déterminer le sens d'ouverture d'une porte, on se place toujours <strong>du côté où l'on tire le vantail vers soi</strong> (côté où les paumelles sont visibles) :<br>
+                        • Si la serrure est à gauche et les paumelles à droite <strong>&rarr; TIRANT DROIT</strong> (ou ouvrant gauche).<br>
+                        • Si la serrure est à droite et les paumelles à gauche <strong>&rarr; TIRANT GAUCHE</strong> (ou ouvrant droit).
+                    </div>
+                    <div>
+                        <strong style="color: #1e3a8a;">Convention de cotation des baies :</strong><br>
+                        Les dimensions des ouvertures (fenêtres, portes, baies vitrées) sont normalisées sous la forme :<br>
+                        <div class="math-formula">Largeur tableau × Hauteur tableau (L × H en cm)</div>
+                        <em>Exemple méthodologique : Une fenêtre notée 80 × 120 indique une largeur de 80 cm (0,80 m) et une hauteur de 120 cm (1,20 m).</em>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 6. Géométrie des escaliers -->
+            <div class="tech-box">
+                <div class="tech-title"><span class="badge">6</span> Calcul & Caractéristiques des Escaliers</div>
+                <div class="grid-2" style="font-size: 11px;">
+                    <div style="background: #f8fafc; padding: 5px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                        <strong style="color: #1e3a8a;">Formule de calcul de la hauteur de marche (H) :</strong><br>
+                        La hauteur uniforme de chaque marche est obtenue en divisant la hauteur totale d'étage à franchir par le nombre total de marches :
+                        <div class="math-formula">
+                            H = <span class="fraction"><span class="fraction-top">Hauteur totale à monter (en cm)</span><span class="fraction-bottom">Nombre total de marches</span></span>
+                        </div>
+                        <em>Exemple méthodologique : Pour franchir 280 cm avec 16 marches, chaque marche mesure <strong>H = 280 / 16 = 17,5 cm</strong>.</em>
+                    </div>
+                    <div style="background: #f8fafc; padding: 5px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                        <strong style="color: #1e3a8a;">Typologie des escaliers :</strong><br>
+                        • <strong>Escalier droit :</strong> Marches rectangulaires alignées sur une seule volée rectiligne.<br>
+                        • <strong>Escalier balancé :</strong> Escalier tournant sans palier de repos intermédiaire, composé de marches trapézoïdales rayonnantes.<br>
+                        • <strong>Loi de Blondel :</strong> Règle d'ergonomie et de confort : <strong>2H + G = 60 à 64 cm</strong> (avec G = giron, H = hauteur de marche).
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Réseau d'assainissement et évacuations -->
+            <div class="tech-box" style="margin-bottom: 0;">
+                <div class="tech-title"><span class="badge">7</span> Classification et Collecte des Effluents d'Assainissement</div>
+                <table class="tech-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Sigle</th>
+                            <th style="width: 25%;">Désignation</th>
+                            <th style="width: 32%;">Origine & Équipements raccordés</th>
+                            <th>Règles de collecte et rejet</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="text-align: center; font-weight: 800; color: #0284c7;">EU</td>
+                            <td><strong>Eaux Usées (Eaux Ménagères)</strong></td>
+                            <td>Lavabos, éviers de cuisine, baignoires, bacs à douche, bidets, lave-linge, lave-vaisselle, évacuation des condensats (climatisation / PAC).</td>
+                            <td>Collecte gravitaire vers le réseau d'assainissement. Interdiction de rejet dans les caniveaux publics.</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 800; color: #b45309;">EV</td>
+                            <td><strong>Eaux Vannes (Eaux Noires)</strong></td>
+                            <td>Toilettes (WC), urinoirs. Eaux chargées de matières fécales et d'urines.</td>
+                            <td>Chute verticale dédiée en diamètre minimal 100 mm prolongée par un évent d'aération primaire en toiture.</td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center; font-weight: 800; color: #16a34a;">EP</td>
+                            <td><strong>Eaux Pluviales</strong></td>
+                            <td>Eaux de ruissellement météorique issues des toitures, terrasses et gouttières.</td>
+                            <td>Collecte par gouttières et tuyaux de descente d'eaux pluviales vers regards à grille ou réseau séparatif communal.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style="margin-top: 6px; font-size: 11px; background: #fffbeb; border: 1.5px solid #fde68a; padding: 6px 10px; border-radius: 4px;">
+                    <strong style="color: #b45309;">Règles professionnelles pour techniciens MELEC & MFER :</strong><br>
+                    • <strong>Principe Séparatif :</strong> Les eaux pluviales (EP) ne doivent en aucun cas être raccordées aux réseaux d'eaux usées (EU) ou eaux vannes (EV).<br>
+                    • <strong>Pentes réglementaires :</strong> Les collecteurs horizontaux doivent respecter une pente minimale de <strong>1 cm/m à 2 cm/m (1% à 2%)</strong> pour garantir un écoulement gravitaire auto-nettoyant sans encrassement.<br>
+                    • <strong>Raccordement des condensats (MFER) :</strong> L'évacuation des condensats des climatiseurs et groupes de production frigorifique s'effectue obligatoirement sur le réseau des <strong>Eaux Usées (EU)</strong> avec un siphon disconnecteur à garde d'eau.
+                </div>
+            </div>
+        </div>
+
+        <!-- Pied de page -->
+        <table class="footer-table">
+            <tr>
+                <td style="width: 50%;">Lycée Professionnel — Enseignement Technique MELEC / MFER</td>
+                <td style="width: 50%; text-align: right;">Page 2 / 2 — Fiche Synthèse : Ouvrants & Assainissement</td>
+            </tr>
+        </table>
+    </div>
+
+    </body>
+
+</html>

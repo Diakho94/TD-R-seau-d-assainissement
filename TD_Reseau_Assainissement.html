@@ -1,0 +1,2973 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="M. DIAKHO - Lycée Professionnel | Académie de Versailles">
+    <title>TP 03 : Réseau d'assainissement & Lecture de plans de bâtiment | Bac Pro MELEC & MFER</title>
+
+    <!-- Inclusion sécurisée des librairies PDF haute fidélité -->
+    <script src="js/html2canvas.min.js"></script>
+    <script src="js/jspdf.umd.min.js"></script>
+    <!-- Données Base64 pré-chargées pour prévention absolue du Tainted Canvas sous Chrome/Edge -->
+    <script src="js/td_images_data.js"></script>
+
+    <style>
+        /* =========================================================================
+           1. CHARTE GRAPHIQUE OFFICIELLE & TYPOGRAPHIE RIGIDIFIÉE ARIAL 14
+           Couleurs institutionnelles : Bleu Industriel, Marine & Énergétique
+           ========================================================================= */
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #0284c7;
+            --bg-gray: #f8fafc;
+            --border-color: #cbd5e1;
+            --text-dark: #0f172a;
+            --font-main: Arial, "Helvetica Neue", Helvetica, sans-serif;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            font-family: var(--font-main);
+        }
+
+        body {
+            font-family: var(--font-main);
+            font-size: 14px;
+            margin: 0;
+            padding: 0;
+            background-color: #475569;
+            color: var(--text-dark);
+            line-height: 1.35;
+            -webkit-user-select: none;
+            user-select: none;
+            overflow-x: auto;
+        }
+
+        /* Conteneurs de pages pour affichage en Lignes */
+        .pages-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 26px;
+            padding: 68px 24px 40px 24px;
+            width: 100%;
+            min-width: max-content;
+            box-sizing: border-box;
+        }
+
+        .pages-row {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 24px;
+            width: 100%;
+            margin-bottom: 24px;
+        }
+
+        /* Ligne 1 : Les 3 premières pages STRICTEMENT côte à côte */
+        .pages-row-trio, .pages-row:first-of-type {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            justify-content: center !important;
+            align-items: flex-start !important;
+            width: max-content !important;
+            margin: 0 auto 24px auto !important;
+        }
+
+        /* Ligne 2 : Pages d'exercices modulaires */
+        .pages-row-exercises {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 24px;
+            flex-wrap: wrap;
+            max-width: calc(3 * 210mm + 2 * 24px);
+            margin: 0 auto;
+        }
+
+        /* Format A4 Strict (210mm x 297mm) */
+        .a4-page {
+            width: 210mm;
+            min-width: 210mm;
+            max-width: 210mm;
+            height: 297mm;
+            min-height: 297mm;
+            max-height: 297mm;
+            padding: 7mm 10mm;
+            background: #ffffff;
+            box-shadow: 0 0 16px rgba(0, 0, 0, 0.55);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            overflow: hidden;
+            border-radius: 2px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        /* =========================================================================
+           2. EN-TÊTE ACADÉMIQUE OFFICIEL COMPACT
+           ========================================================================= */
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 6px;
+        }
+
+        .header-table td {
+            border: 1.5px solid var(--primary);
+            padding: 4px 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        .header-title {
+            background-color: #eef3fc;
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            line-height: 1.25;
+        }
+
+        .header-title span {
+            display: block;
+        }
+
+        .header-sub {
+            font-size: 11px;
+            font-weight: 600;
+            color: #334155;
+            text-transform: none;
+            letter-spacing: normal;
+            margin-top: 2px;
+        }
+
+        /* =========================================================================
+           3. SECTIONS, CADRES TECHNIQUES & BOÎTES PÉDAGOGIQUES
+           ========================================================================= */
+        .section-box {
+            border: 1.5px solid var(--border-color);
+            border-radius: 5px;
+            padding: 7px 11px;
+            margin-bottom: 6px;
+            background: #ffffff;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--primary);
+            text-transform: uppercase;
+            border-bottom: 1.5px solid #e2e8f0;
+            padding-bottom: 3px;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-partie {
+            background: var(--primary);
+            color: white;
+            padding: 2px 7px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .pts-badge {
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-weight: 800;
+            border: 1px solid #bfdbfe;
+            padding: 1.5px 7px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            letter-spacing: 0.3px;
+        }
+
+        .mini-card {
+            background: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 5px;
+            padding: 6px 9px;
+            font-size: 12px;
+        }
+
+        .mini-card h4 {
+            margin: 0 0 3px 0;
+            font-size: 12.5px;
+            font-weight: 800;
+        }
+
+        .activity-pill {
+            background: #1e3a8a;
+            color: white;
+            font-size: 10.5px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        /* =========================================================================
+           4. TABLEAUX TECHNIQUES & QUESTIONS D'EXERCICES
+           ========================================================================= */
+        .tech-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+            margin-top: 3px;
+        }
+
+        .tech-table th, .tech-table td {
+            border: 1px solid var(--border-color);
+            padding: 4px 6px;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .tech-table th {
+            background-color: #f1f5f9;
+            color: var(--primary);
+            font-weight: 700;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .question-card {
+            border: 1.5px solid #cbd5e1;
+            background: #f8fafc;
+            border-radius: 5px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
+        }
+
+        .question-title {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tech-select {
+            width: 100%;
+            padding: 5px 8px;
+            border: 1.5px solid #94a3b8;
+            border-radius: 4px;
+            background-color: #ffffff;
+            font-size: 13px;
+            color: #0f172a;
+            outline: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .tech-select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
+        }
+
+        /* =========================================================================
+           5. CADRE TECHNIQUE DE PLAN, LOUPE HD ET BOUCLIER PROTECTEUR
+           ========================================================================= */
+        .plan-frame {
+            position: relative;
+            width: 100%;
+            border: 1.5px solid #94a3b8;
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        .plan-frame img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            pointer-events: none;
+        }
+
+        .img-shield-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            cursor: zoom-in;
+            background: transparent;
+        }
+
+        .zoom-btn-overlay {
+            position: absolute;
+            bottom: 6px;
+            right: 6px;
+            z-index: 60;
+            background: rgba(15, 23, 42, 0.85);
+            color: #ffffff;
+            border: 1px solid #475569;
+            padding: 4px 9px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            backdrop-filter: blur(2px);
+            transition: all 0.2s;
+        }
+
+        .zoom-btn-overlay:hover {
+            background: #2563eb;
+            border-color: #93c5fd;
+        }
+
+        /* Loupe circulaire HD */
+        #loupe-canvas {
+            position: fixed;
+            pointer-events: none;
+            display: none;
+            z-index: 999999;
+            border: 3px solid #2563eb;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.6), inset 0 0 8px rgba(0, 0, 0, 0.2);
+            background: #ffffff;
+            transform: translate(-50%, -50%);
+            width: 220px;
+            height: 220px;
+        }
+
+        /* =========================================================================
+           6. SYSTÈME D'INDICES PROGRESSIFS (3 GRATUITS + ANTI-COPIAGE)
+           ========================================================================= */
+        .hint-btn {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fcd34d;
+            padding: 3.5px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .hint-btn:hover {
+            background: #fde68a;
+        }
+
+        .hint-box {
+            display: none;
+            background: #fffbeb;
+            border: 1px dashed #f59e0b;
+            border-radius: 4px;
+            padding: 5px 9px;
+            margin-top: 4px;
+            font-size: 11.5px;
+            color: #92400e;
+            line-height: 1.35;
+        }
+
+        /* =========================================================================
+           7. BADGES DE MAÎTRISE & ÉVALUATION DES COMPÉTENCES
+           ========================================================================= */
+        .eval-badge {
+            display: inline-block;
+            padding: 2.5px 7px;
+            border-radius: 3px;
+            font-size: 10.5px;
+            font-weight: 800;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        .eval-pending { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+        .eval-vert-fonce { background: #15803d; color: white; border: 1px solid #166534; }
+        .eval-vert-clair { background: #84cc16; color: #0f172a; border: 1px solid #65a30d; }
+        .eval-jaune { background: #eab308; color: #0f172a; border: 1px solid #ca8a04; }
+        .eval-rouge { background: #dc2626; color: white; border: 1px solid #b91c1c; }
+
+        /* Retours visuels de correction */
+        .input-correct {
+            border-color: #16a34a !important;
+            background-color: #f0fdf4 !important;
+            color: #14532d !important;
+        }
+
+        .input-partial {
+            border-color: #eab308 !important;
+            background-color: #fefce8 !important;
+            color: #713f12 !important;
+        }
+
+        .input-wrong {
+            border-color: #dc2626 !important;
+            background-color: #fef2f2 !important;
+            color: #7f1d1d !important;
+        }
+
+        .correction-feedback {
+            font-size: 11.5px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            margin-top: 3px;
+            line-height: 1.3;
+        }
+
+        .corr-correct {
+            background-color: #f0fdf4;
+            border: 1px solid #86efac;
+            color: #15803d;
+        }
+
+        .corr-partial {
+            background-color: #fefce8;
+            border: 1px solid #fde047;
+            color: #854d0e;
+        }
+
+        .corr-wrong {
+            background-color: #fef2f2;
+            border: 1px solid #fca5a5;
+            color: #b91c1c;
+        }
+
+        /* =========================================================================
+           8. DOCK DE NAVIGATION SUPÉRIEUR
+           ========================================================================= */
+        .dock-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 52px;
+            background: #0f172a;
+            border-bottom: 2px solid #3b82f6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 9999;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+        }
+
+        .dock-left, .dock-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dock-tab {
+            background: #1e293b;
+            color: #cbd5e1;
+            border: 1px solid #334155;
+            padding: 4px 9px;
+            font-size: 11.5px;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dock-tab:hover {
+            background: #334155;
+            color: #ffffff;
+        }
+
+        .dock-tab.active {
+            background: #2563eb;
+            color: #ffffff;
+            border-color: #60a5fa;
+        }
+
+        .dock-btn {
+            background: #334155;
+            color: white;
+            border: 1px solid #475569;
+            padding: 5px 11px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .dock-btn:hover {
+            background: #475569;
+        }
+
+        .dock-btn.active-mode {
+            background: #2563eb;
+            border-color: #93c5fd;
+        }
+
+        .dock-status-badge {
+            font-size: 11.5px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .status-unvalidated {
+            background: #ef4444;
+            color: white;
+        }
+
+        .status-validated {
+            background: #16a34a;
+            color: white;
+        }
+
+        /* Pied de page A4 */
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-top: 1.5px solid var(--primary);
+            font-size: 10.5px;
+            color: #475569;
+            font-weight: 600;
+            margin-top: 4px;
+            padding-top: 2px;
+        }
+
+        .footer-table td {
+            padding: 2px 4px;
+        }
+
+        /* =========================================================================
+           9. MODES D'AFFICHAGE (GRILLE / VERTICAL / SINGLE)
+           ========================================================================= */
+        body.mode-vertical .pages-container {
+            min-width: 100% !important;
+            width: 100% !important;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        body.mode-vertical .pages-row,
+        body.mode-vertical .pages-row-trio,
+        body.mode-vertical .pages-row-exercises {
+            flex-direction: column !important;
+            align-items: center !important;
+            gap: 24px !important;
+            width: 100% !important;
+        }
+
+        body.mode-single .pages-container {
+            min-width: 100% !important;
+            width: 100% !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        body.mode-single .pages-row,
+        body.mode-single .pages-row-trio,
+        body.mode-single .pages-row-exercises {
+            display: contents !important;
+        }
+
+        body.mode-single .a4-page {
+            display: none;
+        }
+
+        body.mode-single .a4-page.single-active {
+            display: flex !important;
+        }
+
+        /* =========================================================================
+           10. MODALE ZOOM PLEIN ÉCRAN
+           ========================================================================= */
+        .zoom-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.96);
+            z-index: 100000;
+            display: none;
+            flex-direction: column;
+            backdrop-filter: blur(4px);
+        }
+
+        .zoom-modal-header {
+            height: 48px;
+            background: #1e3a8a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            color: white;
+            border-bottom: 1.5px solid #334155;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .zoom-modal-toolbar {
+            display: flex;
+            gap: 6px;
+        }
+
+        .zoom-modal-toolbar button {
+            background: #334155;
+            color: white;
+            border: 1px solid #475569;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .zoom-modal-toolbar button:hover {
+            background: #2563eb;
+        }
+
+        .zoom-modal-body {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            position: relative;
+        }
+
+        .zoom-modal-body:active {
+            cursor: grabbing;
+        }
+
+        .zoom-modal-body img {
+            max-width: 92%;
+            max-height: 92%;
+            object-fit: contain;
+            transition: transform 0.1s ease-out;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.8);
+            border-radius: 4px;
+            background: #ffffff;
+        }
+
+        /* Modale synchronisation SSE */
+        .sync-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.85);
+            z-index: 100001;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(3px);
+        }
+
+        .sync-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px 24px;
+            width: 440px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            border: 2px solid #3b82f6;
+            text-align: center;
+        }
+
+        /* =========================================================================
+           11. RÈGLES D'IMPRESSION STRICTES
+           ========================================================================= */
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        @media print {
+            body {
+                background: none !important;
+                padding: 0 !important;
+                -webkit-user-select: auto !important;
+                user-select: auto !important;
+            }
+
+            .dock-bar, .zoom-modal, .sync-modal, #loupe-canvas, .zoom-btn-overlay, .hint-btn {
+                display: none !important;
+            }
+
+            .pages-container {
+                padding: 0 !important;
+                gap: 0 !important;
+                display: block !important;
+                width: 210mm !important;
+                min-width: 210mm !important;
+            }
+
+            .pages-row, .pages-row-trio, .pages-row-exercises {
+                display: block !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 210mm !important;
+                min-width: 210mm !important;
+                gap: 0 !important;
+            }
+
+            .a4-page {
+                display: flex !important;
+                page-break-before: always !important;
+                page-break-after: always !important;
+                break-before: page !important;
+                break-after: page !important;
+                box-shadow: none !important;
+                margin: 0 !important;
+                padding: 7mm 10mm !important;
+                width: 210mm !important;
+                height: 297mm !important;
+                overflow: hidden !important;
+            }
+
+            .hint-box {
+                display: block !important;
+                border: 1px solid #cbd5e1 !important;
+                background: #f8fafc !important;
+                color: #334155 !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Canvas circulaire Loupe Haute Définition -->
+    <canvas id="loupe-canvas" width="220" height="220"></canvas>
+
+    <!-- Modale de synchronisation temps réel SSE -->
+    <div id="sync-sse-modal" class="sync-modal">
+        <div class="sync-card">
+            <h3 style="margin: 0 0 10px 0; color: #1e3a8a; font-size: 16px;">Transmission et Certification</h3>
+            <p id="sync-sse-status" style="font-size: 13px; color: #334155; margin-bottom: 14px;">
+                Initialisation du flux sécurisé vers le serveur...
+            </p>
+            <div style="background: #e2e8f0; border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 14px;">
+                <div id="sync-sse-bar" style="background: #2563eb; width: 25%; height: 100%; transition: width 0.3s;"></div>
+            </div>
+            <div id="sync-sse-fallback-box" style="margin-top: 10px; display: none;">
+                <button type="button" id="btn-secours-direct-modal" onclick="telechargerPDFSecoursLocal()" style="background: #b45309; color: white; border: none; padding: 7px 14px; border-radius: 5px; font-weight: 700; font-size: 12.5px; cursor: pointer;">
+                    Mode Secours : Télécharger PDF local
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         DOCK DE NAVIGATION & CONTRÔLE SUPÉRIEUR MODERNE
+         ========================================================================= -->
+    <div class="dock-bar">
+        <div class="dock-left">
+            <span id="dock-title-label" style="font-weight: 800; color: #93c5fd; font-size: 13px; letter-spacing: 0.5px;">TP 03 ASSAINISSEMENT — MELEC</span>
+            <div id="dock-tabs-container" style="display: flex; gap: 4px; margin-left: 6px;">
+                <button class="dock-tab active" onclick="naviguerVersPage('page-1-garde')">P.1 Garde</button>
+                <button class="dock-tab" onclick="naviguerVersPage('page-2-contexte')">P.2 Contexte</button>
+                <button class="dock-tab" onclick="naviguerVersPage('page-3-bilan')">P.3 Bilan</button>
+                <button class="dock-tab" onclick="naviguerVersPage('page-4-exercices-1')">P.4 Situation</button>
+                <button class="dock-tab" onclick="naviguerVersPage('page-5-exercices-2')">P.5 Construction</button>
+                <button class="dock-tab" onclick="naviguerVersPage('page-6-exercices-3')">P.6 Cotation</button>
+                <button class="dock-tab" onclick="naviguerVersPage('page-7-exercices-4')">P.7 Escaliers</button>
+                <button class="dock-tab" onclick="naviguerVersPage('page-8-exercices-5')">P.8 Assainissement</button>
+            </div>
+            <div style="display: flex; gap: 4px; margin-left: 8px;">
+                <button id="btn-mode-lignes" class="dock-btn active-mode" onclick="basculerModeAffichage('lignes')" title="Affichage Grille">Grille</button>
+                <button id="btn-mode-vertical" class="dock-btn" onclick="basculerModeAffichage('vertical')" title="Défilement vertical continu">Vertical</button>
+                <button id="btn-mode-single" class="dock-btn" onclick="basculerModeAffichage('single')" title="Afficher une seule page à la fois">Page unique</button>
+                <button id="btn-dock-loupe" class="dock-btn" onclick="basculerLoupe()" style="background: #0284c7;" title="Activer / désactiver la loupe de précision">Activer Loupe</button>
+            </div>
+        </div>
+
+        <div class="dock-right" style="display: flex; align-items: center; gap: 8px;">
+
+
+            <span id="dock-status-badge" class="dock-status-badge status-unvalidated">Non validé</span>
+
+            <button id="btn-dock-synthese" class="dock-btn" onclick="ouvrirFicheSynthese()" style="background: #0284c7;">
+                Fiche Synthèse
+            </button>
+            <button id="btn-dock-pdf" class="dock-btn" onclick="exporterDossierPDF()" disabled style="background: #16a34a; opacity: 0.5; cursor: not-allowed;">
+                Enregistrer PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         CONTENEUR PRINCIPAL DES PAGES (2 LIGNES)
+         ========================================================================= -->
+    <div class="pages-container">
+
+        <!-- =====================================================================
+             LIGNE 1 FIXE : PAGES 1, 2 ET 3 (Garde, Contexte & Référentiel, Bilan)
+             ===================================================================== -->
+        <div class="pages-row pages-row-trio" id="row-ligne-1">
+
+            <!-- -----------------------------------------------------------------
+                 PAGE 1 : PAGE DE GARDE & FICHE CONTRAT D'IDENTIFICATION
+                 ----------------------------------------------------------------- -->
+            <div class="a4-page" id="page-1-garde">
+                <div>
+                    <!-- En-tête académique officiel -->
+                    <table class="header-table">
+                        <tr>
+                            <td style="width: 25%; font-weight: 800; font-size: 11.5px; background: #f8fafc; color: var(--primary); line-height: 1.35;">
+                                Lycée Professionnel<br>
+                                <span style="font-size: 10.5px; color: #475569; font-weight: 600;">Académie de Versailles</span><br>
+                                <span class="header-filiere-label" style="font-size: 11.5px; color: #0284c7; font-weight: 700;">Bac Pro MELEC</span>
+                            </td>
+                            <td style="width: 50%;" class="header-title">
+                                <span id="header-titre-officiel">TP 03 : RÉSEAU D'ASSAINISSEMENT & LECTURE DE PLANS</span>
+                                <span class="header-sub">Dossier d'activité d'apprentissage & d'évaluation — Bâtiment individuel</span>
+                            </td>
+                            <td style="width: 25%; font-size: 11px; background: #f8fafc; line-height: 1.35;">
+                                <strong>M. DIAKHO</strong>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- 1. Fiche Contrat & Identification -->
+                    <div class="section-box" style="padding: 8px 12px; margin-bottom: 8px;">
+                        <div class="section-title" style="margin-bottom: 6px; justify-content: space-between;">
+                            <span>Fiche Contrat & Identification de l'Élève</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <label style="font-size: 12px; font-weight: 600; color: #334155; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                                    <input type="checkbox" id="check-binome" onchange="toggleBinomeMode()" style="width: 15px; height: 15px;">
+                                    Travailler en binôme
+                                </label>
+                                <span id="badge-mode-travail" style="background: #e2e8f0; color: #475569; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 4px;">Mode individuel</span>
+
+                            </div>
+                        </div>
+
+                        <!-- Grille Champs Identité avec les 8 classes officielles -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px;">
+                            <div>
+                                <label style="font-weight: 700; color: #1e3a8a; display: block; margin-bottom: 2px; font-size: 12.5px;">Nom de l'élève 1 * :</label>
+                                <input type="text" id="student-nom" class="tech-select" placeholder="NOM DE L'ÉLÈVE 1" oninput="mettreAJourIdentite()" style="text-transform: uppercase;">
+                            </div>
+                            <div>
+                                <label style="font-weight: 700; color: #1e3a8a; display: block; margin-bottom: 2px; font-size: 12.5px;">Prénom de l'élève 1 * :</label>
+                                <input type="text" id="student-prenom" class="tech-select" placeholder="Prénom de l'élève 1" oninput="mettreAJourIdentite()">
+                            </div>
+                            <div>
+                                <label style="font-weight: 700; color: #1e3a8a; display: block; margin-bottom: 2px; font-size: 12.5px;">Classe * :</label>
+                                <select id="student-classe" class="tech-select" onchange="mettreAJourIdentite()">
+                                    <option value="">-- Choisir la classe --</option>
+                                    <option value="1MELEC1" selected>1MELEC1</option>
+                                    <option value="1MELEC2">1MELEC2</option>
+                                    <option value="1MELFER MELEC">1MELFER MELEC</option>
+                                    <option value="TMELEC1">TMELEC1</option>
+                                    <option value="TMELEC2">TMELEC2</option>
+                                    <option value="1MFER">1MFER</option>
+                                    <option value="TMFER">TMFER</option>
+                                    <option value="1MELFER MFER">1MELFER MFER</option>
+                                </select>
+                            </div>
+                            <div id="container-student-groupe">
+                                <label id="label-student-groupe" style="font-weight: 700; color: #1e3a8a; display: block; margin-bottom: 2px; font-size: 12.5px;">Groupe * :</label>
+                                <select id="student-groupe" class="tech-select" onchange="mettreAJourIdentite()">
+                                    <option value="">-- Choisir le groupe --</option>
+                                    <option value="Groupe 1" selected>Groupe 1</option>
+                                    <option value="Groupe 2">Groupe 2</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Ligne Élève 2 (Masquée par défaut) -->
+                        <div id="box-eleve-2" style="display: none; grid-template-columns: 1fr 1fr; gap: 6px 14px; margin-top: 6px; border-top: 1px dashed #bfdbfe; padding-top: 6px;">
+                            <div>
+                                <label style="font-weight: 700; color: #1e3a8a; display: block; margin-bottom: 2px; font-size: 12.5px;">Nom de l'élève 2 * :</label>
+                                <input type="text" id="student-nom2" class="tech-select" placeholder="NOM ÉLÈVE 2" oninput="mettreAJourIdentite()" style="text-transform: uppercase;">
+                            </div>
+                            <div>
+                                <label style="font-weight: 700; color: #1e3a8a; display: block; margin-bottom: 2px; font-size: 12.5px;">Prénom de l'élève 2 * :</label>
+                                <input type="text" id="student-prenom2" class="tech-select" placeholder="Prénom Élève 2" oninput="mettreAJourIdentite()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Objectif de la séance (ADAPTATIF EXCLUSIF MELEC OU MFER) -->
+                    <div id="objectif-melec" class="section-box" style="background: #eff6ff; border: 1.5px solid #93c5fd; padding: 7px 12px; margin-bottom: 8px;">
+                        <strong style="color: #1e3a8a; font-size: 13px; display: block; margin-bottom: 2px;">Objectif de la séance — Bac Pro MELEC</strong>
+                        <p style="margin: 0; font-size: 12.5px; color: #1e293b; line-height: 1.4;">
+                            Décoder les plans du bâtiment, relever les cotes et identifier le réseau d'assainissement pour implanter les équipements électriques.
+                        </p>
+                    </div>
+
+                    <div id="objectif-mfer" class="section-box" style="display: none; background: #f0fdfa; border: 1.5px solid #5eead4; padding: 7px 12px; margin-bottom: 8px;">
+                        <strong style="color: #0f766e; font-size: 13px; display: block; margin-bottom: 2px;">Objectif de la séance — Bac Pro MFER</strong>
+                        <p style="margin: 0; font-size: 12.5px; color: #1e293b; line-height: 1.4;">
+                            Décoder les plans du bâtiment pour dimensionner les pièces et raccorder l'évacuation des condensats (climatisation/PAC) au réseau d'assainissement.
+                        </p>
+                    </div>
+
+                    <!-- 3. Planche Image de Garde avec bouclier anti-Google Lens -->
+                    <div class="plan-frame" style="height: 480px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <div class="img-shield-overlay" onclick="ouvrirZoomPlan('img/coupe_aa.png', 'Page de Garde : Pavillon individuel (Coupe A-A)')"></div>
+                        <img src="img/coupe_aa.png" alt="Pavillon individuel (Coupe A-A)" ondragstart="return false;" style="max-height: 470px; width: 100%; object-fit: contain;">
+                        <button class="zoom-btn-overlay" onclick="ouvrirZoomPlan('img/coupe_aa.png', 'Page de Garde : Pavillon individuel (Coupe A-A)')">Agrandir la Coupe A-A</button>
+                    </div>
+                </div>
+
+                <!-- Footer A4 -->
+                <table class="footer-table">
+                    <tr>
+                        <td style="width: 50%;" class="footer-filiere-text">Lycée Professionnel — Enseignement Technique Bac Pro MELEC</td>
+                        <td style="width: 50%; text-align: right;">Page 1 / 8 — Page de Garde & Contrat</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- -----------------------------------------------------------------
+                 PAGE 2 : CADRE PÉDAGOGIQUE & CONTEXTE PROFESSIONNEL
+                 ----------------------------------------------------------------- -->
+            <div class="a4-page" id="page-2-contexte">
+                <div>
+                    <!-- En-tête officiel -->
+                    <table class="header-table">
+                        <tr>
+                            <td style="width: 25%; font-weight: 800; font-size: 11.5px; background: #f8fafc; color: var(--primary); line-height: 1.35;">
+                                Lycée Professionnel<br>
+                                <span style="font-size: 10.5px; color: #475569; font-weight: 600;">Académie de Versailles</span><br>
+                                <span class="header-filiere-label" style="font-size: 11.5px; color: #0284c7; font-weight: 700;">Bac Pro MELEC</span>
+                            </td>
+                            <td style="width: 50%;" class="header-title">
+                                <span id="header-titre-officiel-p2">TP 03 : RÉSEAU D'ASSAINISSEMENT & LECTURE DE PLANS</span>
+                                <span class="header-sub">Contexte professionnel & Référentiel de compétences</span>
+                            </td>
+                            <td style="width: 25%; font-size: 11px; background: #f8fafc; line-height: 1.35;">
+                                <strong>M. DIAKHO</strong>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- 1. Activités & Tâches Professionnelles MELEC (AFFICHÉ EXCLUSIVEMENT POUR MELEC) -->
+                    <div id="cadre-referentiel-melec" class="section-box" style="padding: 7px 11px; margin-bottom: 7px;">
+                        <div class="section-title">
+                            <span>1. Référentiel Professionnel Officiel — Bac Pro MELEC</span>
+                        </div>
+                        <div style="background: #f8fafc; border: 1.5px solid #bfdbfe; border-radius: 5px; padding: 7px 10px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                <strong style="color: #1e3a8a; font-size: 13px;">PÔLE 1 / ACTIVITÉ 1 : Préparation des opérations de réalisation, de mise en service et de maintenance</strong>
+                                <span class="activity-pill">MELEC</span>
+                            </div>
+                            <div style="font-size: 12px; color: #334155; line-height: 1.4; margin-bottom: 5px;">
+                                <strong>Tâche professionnelle mobilisée :</strong><br>
+                                • <strong>T1-2 :</strong> Rechercher et expliquer les informations relatives aux opérations et aux conditions d'exécution (décoder les plans d'architecture du bâtiment, repérer l'implantation des équipements, identifier les passages de canalisations, câbles et conduits, identifier les réservations dans les dalles et murs).
+                            </div>
+                            <div style="font-size: 12px; color: #334155; line-height: 1.4; background: #ffffff; padding: 5px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                                <strong>Compétences du Référentiel MELEC évaluées :</strong><br>
+                                • <strong>C1 :</strong> Analyser les conditions de l'opération et son contexte (C1-1 : Identifier l'environnement du bâtiment ; C1-2 : Exploiter les documents techniques, coupes et plans).<br>
+                                • <strong>C2 :</strong> Organiser le poste de travail et sécuriser l'opération (documents, règles, instruments de mesure et de calcul).
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 1. Activités & Tâches Professionnelles MFER (AFFICHÉ EXCLUSIVEMENT POUR MFER) -->
+                    <div id="cadre-referentiel-mfer" class="section-box" style="display: none; padding: 7px 11px; margin-bottom: 7px;">
+                        <div class="section-title">
+                            <span>1. Référentiel Professionnel Officiel — Bac Pro MFER</span>
+                        </div>
+                        <div style="background: #f8fafc; border: 1.5px solid #99f6e4; border-radius: 5px; padding: 7px 10px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+                                <strong style="color: #0f766e; font-size: 13px;">PÔLE 1 / ACTIVITÉ A1 : Préparation des opérations à réaliser</strong>
+                                <span class="activity-pill" style="background: #0f766e;">MFER</span>
+                            </div>
+                            <div style="font-size: 12px; color: #334155; line-height: 1.4; margin-bottom: 5px;">
+                                <strong>Tâches professionnelles mobilisées :</strong><br>
+                                • <strong>A1T1 :</strong> Prendre connaissance des dossiers relatifs aux opérations à réaliser (dossier technique bâtiment, plans de masse, locaux techniques et évacuations).<br>
+                                • <strong>A1T2 :</strong> Analyser et exploiter les données techniques d'une installation (cotes de niveaux, hauteurs sous plafond, épaisseurs de parois et dalles, évacuation gravitaire des condensats vers les réseaux d'assainissement EU/EP).
+                            </div>
+                            <div style="font-size: 12px; color: #334155; line-height: 1.4; background: #ffffff; padding: 5px 8px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                                <strong>Compétences du Référentiel MFER évaluées :</strong><br>
+                                • <strong>C1 :</strong> Analyser les conditions de l'opération et son contexte.<br>
+                                • <strong>C2 :</strong> Analyser et exploiter les données techniques de l'intervention (plans, coupes, calcul de surfaces thermiques et réseaux).<br>
+                                • <strong>C4 :</strong> Organiser et sécuriser son intervention (poste de travail, sécurité, instruments de mesure et de traçage).
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Mise en situation & Problématique MELEC (AFFICHÉ EXCLUSIVEMENT POUR MELEC) -->
+                    <div id="cadre-situation-melec" class="section-box" style="padding: 7px 11px; margin-bottom: 7px;">
+                        <div class="section-title">
+                            <span>2. Mise en situation & Problématique Professionnelle — Électrotechnique</span>
+                        </div>
+                        <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 6px 10px; border-radius: 0 4px 4px 0; margin-bottom: 6px; font-size: 12px; line-height: 1.4; color: #14532d;">
+                            <strong>Mise en situation :</strong> Sur le chantier d'un pavillon individuel à trois niveaux (Sous-sol, Rez-de-chaussée, Combles), le technicien MELEC intervient pour réaliser l'installation électrique, le tableau de répartition principale, l'éclairage, la VMC et le raccordement de la pompe de relevage. L'intervention exige le décodage préalable des plans architecturaux pour déterminer les cheminements des câbles et les percements à travers les dalles et murs de refend sans endommager les autres réseaux.
+                        </div>
+                        <div style="background: #fefce8; border-left: 4px solid #eab308; padding: 6px 10px; border-radius: 0 4px 4px 0; font-size: 12px; line-height: 1.4; color: #713f12;">
+                            <strong>Problématique professionnelle :</strong> Comment exploiter les pièces graphiques (plan de masse, façades, plans de niveaux, coupe verticale) pour extraire les cotes d'implantation, repérer les murs porteurs pour les passages de canalisations et identifier les collecteurs d'assainissement pour sécuriser les passages d'énergie ?
+                        </div>
+                    </div>
+
+                    <!-- 2. Mise en situation & Problématique MFER (AFFICHÉ EXCLUSIVEMENT POUR MFER) -->
+                    <div id="cadre-situation-mfer" class="section-box" style="display: none; padding: 7px 11px; margin-bottom: 7px;">
+                        <div class="section-title">
+                            <span>2. Mise en situation & Problématique Professionnelle — Froid & Énergies</span>
+                        </div>
+                        <div style="background: #f0fdfa; border-left: 4px solid #0d9488; padding: 6px 10px; border-radius: 0 4px 4px 0; margin-bottom: 6px; font-size: 12px; line-height: 1.4; color: #134e4a;">
+                            <strong>Mise en situation :</strong> Sur le chantier d'un pavillon individuel à trois niveaux (Sous-sol, Rez-de-chaussée, Combles), le technicien MFER intervient pour implanter une pompe à chaleur (PAC) air/eau, un ballon thermodynamique et les réseaux de climatisation. Ces équipements nécessitent la prise en compte des volumes des locaux, des passages de liaisons frigorifiques et l'évacuation gravitaire des condensats vers le réseau d'assainissement approprié.
+                        </div>
+                        <div style="background: #fefce8; border-left: 4px solid #eab308; padding: 6px 10px; border-radius: 0 4px 4px 0; font-size: 12px; line-height: 1.4; color: #713f12;">
+                            <strong>Problématique professionnelle :</strong> Comment exploiter les plans d'architecture du bâtiment pour calculer les surfaces thermiques des pièces, déterminer les hauteurs de passage sous dalles et cloisons, et identifier la destination exacte de chaque canalisation d'assainissement (EU, EV, EP) pour raccorder les condensats conformément aux normes sanitaires et environnementales ?
+                        </div>
+                    </div>
+
+                    <!-- 3. Conditions de réalisation MELEC (AFFICHÉ EXCLUSIVEMENT POUR MELEC) -->
+                    <div id="cadre-conditions-melec" class="section-box" style="padding: 7px 11px; margin-bottom: 0;">
+                        <div class="section-title">
+                            <span>3. Conditions de réalisation — Bac Pro MELEC</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px;">
+                            <div class="mini-card" style="border-top: 3px solid #2563eb;">
+                                <h4 style="color: #1e3a8a;">On donne :</h4>
+                                <ul style="margin: 0; padding-left: 14px; font-size: 11.5px; color: #334155; line-height: 1.35;">
+                                    <li>Le dossier ressources (DR 1/3, DR 2/3, DR 3/3).</li>
+                                    <li>Les plans architecturaux numériques HD.</li>
+                                    <li>La fiche technique de synthèse bâtiment.</li>
+                                </ul>
+                            </div>
+                            <div class="mini-card" style="border-top: 3px solid #0284c7;">
+                                <h4 style="color: #0284c7;">On demande :</h4>
+                                <ul style="margin: 0; padding-left: 14px; font-size: 11.5px; color: #334155; line-height: 1.35;">
+                                    <li>Identifier l'orientation, les niveaux et l'échelle.</li>
+                                    <li>Relever les cotes, épaisseurs de dalles et baies.</li>
+                                    <li>Identifier les canalisations d'évacuation.</li>
+                                </ul>
+                            </div>
+                            <div class="mini-card" style="border-top: 3px solid #16a34a;">
+                                <h4 style="color: #16a34a;">On exige :</h4>
+                                <ul style="margin: 0; padding-left: 14px; font-size: 11.5px; color: #334155; line-height: 1.35;">
+                                    <li>Rigueur des relevés dimensionnels et unités.</li>
+                                    <li>Vocabulaire technique du bâtiment normé.</li>
+                                    <li>Organisation méthodique du poste de travail.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Conditions de réalisation MFER (AFFICHÉ EXCLUSIVEMENT POUR MFER) -->
+                    <div id="cadre-conditions-mfer" class="section-box" style="display: none; padding: 7px 11px; margin-bottom: 0;">
+                        <div class="section-title">
+                            <span>3. Conditions de réalisation — Bac Pro MFER</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 7px;">
+                            <div class="mini-card" style="border-top: 3px solid #0f766e;">
+                                <h4 style="color: #0f766e;">On donne :</h4>
+                                <ul style="margin: 0; padding-left: 14px; font-size: 11.5px; color: #334155; line-height: 1.35;">
+                                    <li>Le dossier ressources (DR 1/3, DR 2/3, DR 3/3).</li>
+                                    <li>Les plans architecturaux numériques HD.</li>
+                                    <li>La fiche technique de synthèse fluides.</li>
+                                </ul>
+                            </div>
+                            <div class="mini-card" style="border-top: 3px solid #0284c7;">
+                                <h4 style="color: #0284c7;">On demande :</h4>
+                                <ul style="margin: 0; padding-left: 14px; font-size: 11.5px; color: #334155; line-height: 1.35;">
+                                    <li>Calculer la surface de la chambre 1 et cote C.</li>
+                                    <li>Calculer la hauteur de marche de l'escalier.</li>
+                                    <li>Classifier les effluents et tuyaux (EU, EV, EP).</li>
+                                </ul>
+                            </div>
+                            <div class="mini-card" style="border-top: 3px solid #16a34a;">
+                                <h4 style="color: #16a34a;">On exige :</h4>
+                                <ul style="margin: 0; padding-left: 14px; font-size: 11.5px; color: #334155; line-height: 1.35;">
+                                    <li>Précision des calculs métriques et surfaces.</li>
+                                    <li>Respect strict du principe séparatif (EU/EV/EP).</li>
+                                    <li>Organisation méthodique et sécurité du poste.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer A4 -->
+                <table class="footer-table">
+                    <tr>
+                        <td style="width: 50%;" class="footer-filiere-text">Lycée Professionnel — Enseignement Technique Bac Pro MELEC</td>
+                        <td style="width: 50%; text-align: right;">Page 2 / 8 — Contexte & Référentiel</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- -----------------------------------------------------------------
+                 PAGE 3 : BILAN OFFICIEL PAR COMPÉTENCES & VALIDATION PROFESSEUR
+                 ----------------------------------------------------------------- -->
+            <div class="a4-page" id="page-3-bilan">
+                <div>
+                    <!-- En-tête officiel -->
+                    <table class="header-table">
+                        <tr>
+                            <td style="width: 25%; font-weight: 800; font-size: 11.5px; background: #f8fafc; color: var(--primary); line-height: 1.35;">
+                                Lycée Professionnel<br>
+                                <span style="font-size: 10.5px; color: #475569; font-weight: 600;">Académie de Versailles</span><br>
+                                <span class="header-filiere-label" style="font-size: 11.5px; color: #0284c7; font-weight: 700;">Bac Pro MELEC</span>
+                            </td>
+                            <td style="width: 50%;" class="header-title">
+                                <span id="header-titre-officiel-p3">TP 03 : RÉSEAU D'ASSAINISSEMENT & LECTURE DE PLANS</span>
+                                <span class="header-sub">Bilan officiel par compétences & Validation de séance</span>
+                            </td>
+                            <td style="width: 25%; font-size: 11px; background: #f8fafc; line-height: 1.35;">
+                                <strong>M. DIAKHO</strong>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Bandeau d'Identification Élève(s) -->
+                    <div id="bilan-eleve-bandeau" style="display: flex; justify-content: space-between; align-items: center; background: #f8fafc; border: 1.5px solid #cbd5e1; border-radius: 5px; padding: 5px 10px; margin-bottom: 6px; font-size: 12.5px;">
+                        <div><strong>Élève(s) :</strong> <span id="bilan-nom-eleve" style="color: #1e3a8a; font-weight: 700;">--</span></div>
+                        <div><strong>Classe :</strong> <span id="bilan-classe-eleve" style="color: #1e3a8a; font-weight: 700;">1MELEC1</span><span id="bilan-groupe-wrapper"> | <strong>Groupe :</strong> <span id="bilan-groupe-eleve" style="color: #1e3a8a; font-weight: 700;">Groupe 1</span></span></div>
+                    </div>
+
+                    <!-- 1. Encadré NOTE FINALE OFFICIELLE -->
+                    <div class="section-box" style="text-align: center; padding: 8px 14px; background: linear-gradient(135deg, #f8fafc, #eff6ff); border: 2px solid var(--primary-light); margin-bottom: 6px; border-radius: 6px;">
+                        <div style="font-size: 12px; font-weight: 800; letter-spacing: 0.8px; color: #1e3a8a; text-transform: uppercase;">
+                            NOTE FINALE OFFICIELLE
+                        </div>
+                        <div id="global-score-converted" style="font-size: 32px; font-weight: 900; color: #1e3a8a; margin: 2px 0;">
+                            --.- / 20
+                        </div>
+                        <div id="prof-eval-status-text" style="font-size: 12px; font-weight: 600; color: #64748b;">
+                            Dossier en attente de validation par l'enseignant
+                        </div>
+                        <div id="score-details-row" style="margin-top: 4px; font-size: 12px; color: #1e3a8a; border-top: 1px dashed #cbd5e1; padding-top: 4px;">
+                            Score du devoir : <strong id="global-score-raw">0.0 / 24.0 pts</strong>
+                        </div>
+                    </div>
+
+                    <!-- 2. Bilan Officiel par Compétences (Généré dynamiquement selon MELEC ou MFER) -->
+                    <div class="section-box" style="padding: 6px 10px; margin-bottom: 6px;">
+                        <div class="section-title" style="margin-bottom: 4px; justify-content: space-between;">
+                            <span>Bilan Officiel par Compétences</span>
+                            <span id="badge-bilan-filiere" style="font-size: 11px; font-weight: 800; background: #e0f2fe; color: #0369a1; padding: 1.5px 6px; border-radius: 3px;">Bac Pro MELEC</span>
+                        </div>
+                        <table class="tech-table" id="table-bilan-competences">
+                            <thead>
+                                <tr>
+                                    <th style="width: 12%; text-align: center;">Réf</th>
+                                    <th style="width: 52%;">Intitulé de la compétence</th>
+                                    <th style="width: 24%; text-align: center;">Niveau d'acquisition</th>
+                                    <th style="width: 12%; text-align: center;">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Rempli dynamiquement au DOMContentLoaded et au changement de classe -->
+                            </tbody>
+                        </table>
+
+                        <!-- Paliers Éduscol -->
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 5px; margin-top: 5px; font-size: 10.5px; text-align: center;">
+                            <div style="background: #15803d; color: white; padding: 3px 2px; border-radius: 3px; font-weight: bold;">
+                                Très bonne maîtrise<br>17 ≤ Note ≤ 20
+                            </div>
+                            <div style="background: #84cc16; color: #0f172a; padding: 3px 2px; border-radius: 3px; font-weight: bold;">
+                                Maîtrise satisfaisante<br>11 &lt; Note &lt; 17
+                            </div>
+                            <div style="background: #eab308; color: #0f172a; padding: 3px 2px; border-radius: 3px; font-weight: bold;">
+                                Maîtrise fragile<br>4 &lt; Note ≤ 11
+                            </div>
+                            <div style="background: #dc2626; color: white; padding: 3px 2px; border-radius: 3px; font-weight: bold;">
+                                Maîtrise insuffisante<br>Note ≤ 4 / 20
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Encadré Organisation du poste de travail (MELEC C2 / MFER C4) -->
+                    <div class="section-box" style="padding: 6px 10px; margin-bottom: 6px; background: #fafafa;">
+                        <div class="section-title" style="margin-bottom: 4px; justify-content: space-between;">
+                            <span id="title-organisation-poste">Compétence C2 — Organiser le poste de travail et sécuriser l'opération</span>
+                            <span id="c2-status-badge" class="eval-badge eval-rouge">MAÎTRISE INSUFFISANTE</span>
+                        </div>
+                        <div style="display: flex; gap: 20px; font-size: 12px; align-items: center;">
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="checkbox" id="check-c2-classeur" onchange="mettreAJourC2()" style="width: 15px; height: 15px;">
+                                <strong>Porte-documents complet présent (dossier technique & fiches)</strong>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="checkbox" id="check-c2-stylo" onchange="mettreAJourC2()" style="width: 15px; height: 15px;">
+                                <strong>Matériel de traçage, règle & calculatrice présents</strong>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 4. Espace Réservé à l'Enseignant (Validation & Déverrouillage) -->
+                    <div id="section-prof-auth" class="section-box section-prof-box" style="background: #fffbeb; border: 1.5px solid #fde68a; padding: 6px 10px; margin-bottom: 0;">
+                        <div class="section-title" style="color: #b45309; border-bottom: none; margin-bottom: 2px;">
+                            <span>Espace Réservé à l'Enseignant (Validation & Déverrouillage)</span>
+                        </div>
+                        <p style="margin: 0 0 5px 0; font-size: 12px; color: #78350f; line-height: 1.35;">
+                            Lorsque le questionnaire est complété, appelez l'enseignant pour contrôle et saisie du code secret de certification.
+                        </p>
+                        <div id="prof-auth-box" style="display: flex; gap: 7px; align-items: center; flex-wrap: wrap;">
+                            <input type="password" id="prof-code" placeholder="Code secret" style="padding: 5px 10px; border-radius: 4px; border: 1.5px solid #cbd5e1; font-size: 13px; text-align: center; letter-spacing: 2px; width: 160px;" onkeydown="if(event.key==='Enter') validerTD()">
+                            <button type="button" id="btn-valider-td" onclick="validerTD()" style="background: #2563eb; color: white; border: none; padding: 6px 14px; border-radius: 4px; font-weight: 700; font-size: 12.5px; cursor: pointer; transition: all 0.2s;">
+                                Valider le TP & Afficher la Note
+                            </button>
+                            <button type="button" id="btn-secours-prof-box" onclick="telechargerPDFSecoursLocal()" style="display: none; background: #b45309; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 700; font-size: 11.5px; cursor: pointer;" title="Téléchargement direct en cas de coupure Internet">
+                                Mode Secours : Télécharger PDF local
+                            </button>
+                            <span id="prof-error-msg" style="color: #dc2626; font-size: 11.5px; font-weight: bold; width: 100%; display: none;"></span>
+                        </div>
+                        <div id="prof-validated-box" style="display: none; background: #ecfdf5; border: 1.5px solid #a7f3d0; padding: 6px 10px; border-radius: 4px; margin-top: 5px;">
+                            <div style="font-size: 12.5px; font-weight: bold; color: #065f46;">
+                                Dossier certifié et enregistré avec succès !
+                            </div>
+                            <div style="font-size: 11.5px; color: #047857; margin-top: 2px;">
+                                Fichier copie archivé : <span id="saved-filename-display" style="font-weight: bold; font-family: monospace;"></span>
+                            </div>
+                            <div style="margin-top: 5px;">
+                                <button type="button" onclick="exporterDossierPDF()" style="background: #16a34a; color: white; border: none; padding: 4px 11px; border-radius: 4px; font-weight: 700; font-size: 11.5px; cursor: pointer;">
+                                    Télécharger une copie du PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer A4 -->
+                <table class="footer-table">
+                    <tr>
+                        <td style="width: 50%;" class="footer-filiere-text">Lycée Professionnel — Enseignement Technique Bac Pro MELEC</td>
+                        <td style="width: 50%; text-align: right;">Page 3 / 8 — Bilan & Synthèse des Notes</td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+        <!-- FIN LIGNE 1 FIXE -->
+
+        <!-- =====================================================================
+             <!-- === DEBUT ZONE EXERCICES MODULAIRES === -->
+             LIGNE 2 MODULAIRE : PAGES D'EXERCICES (PAGES 4 À 8)
+             ===================================================================== -->
+        <div class="pages-row pages-row-exercises" id="row-ligne-2">
+
+            <!-- -----------------------------------------------------------------
+                 PAGE 4 : EXERCICE 1 — SITUATION GÉOGRAPHIQUE & FAÇADES
+                 ----------------------------------------------------------------- -->
+            <div class="a4-page" id="page-4-exercices-1">
+                <div>
+                    <!-- En-tête officiel -->
+                    <table class="header-table">
+                        <tr>
+                            <td style="width: 25%; font-weight: 800; font-size: 11.5px; background: #f8fafc; color: var(--primary); line-height: 1.35;">
+                                Lycée Professionnel<br>
+                                <span style="font-size: 10.5px; color: #475569; font-weight: 600;">Académie de Versailles</span><br>
+                                <span class="header-filiere-label" style="font-size: 11.5px; color: #0284c7; font-weight: 700;">Bac Pro MELEC</span>
+                            </td>
+                            <td style="width: 50%;" class="header-title">
+                                <span>TP 03 : RÉSEAU D'ASSAINISSEMENT</span>
+                                <span class="header-sub">1ère Partie : Étude de la situation géographique du bâtiment</span>
+                            </td>
+                            <td style="width: 25%; font-size: 11px; background: #f8fafc; line-height: 1.35;">
+                                <strong>M. DIAKHO</strong>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="section-box" style="margin-bottom: 5px; padding: 4px 8px;">
+                        <div class="section-title" style="margin-bottom: 2px;">
+                            <span class="badge-partie">EXERCICE 1</span> SITUATION GÉOGRAPHIQUE, ORIENTATION & ÉCHELLE
+                            <span class="pts-badge" style="margin-left: auto;">4.0 POINTS (C1)</span>
+                        </div>
+                        <p style="margin: 2px 0 0 0; font-size: 12px; color: #1e293b;">
+                            <strong>Consigne :</strong> À l'aide du document ressource <strong>DR 1/3</strong> ci-dessous, identifiez les documents, déterminez l'orientation de la façade principale et explicitez l'échelle graphique.
+                        </p>
+                    </div>
+
+                    <!-- Planche Technique DR 1/3 -->
+                    <div class="plan-frame" style="height: 470px; margin-bottom: 6px;">
+                        <div class="img-shield-overlay" onclick="ouvrirZoomPlan('img/dr1_situation_masse_facades.png', 'DR 1/3 : Situation géographique, Plan de masse & Façades')"></div>
+                        <img id="img-plan-p4" src="img/dr1_situation_masse_facades.png" alt="Dossier ressource DR 1/3" ondragstart="return false;" style="max-height: 460px;">
+                        <button class="zoom-btn-overlay" onclick="ouvrirZoomPlan('img/dr1_situation_masse_facades.png', 'DR 1/3 : Situation géographique, Plan de masse & Façades')">Zoom HD Plan (DR 1/3)</button>
+                    </div>
+
+                    <!-- Questions Exercice 1 -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 12px;">
+                        <div style="font-weight: 700; color: #1e3a8a; font-size: 12.5px; margin-bottom: 2px; grid-column: 1 / -1;">
+                            1 - Donner le nom des documents suivants :
+                        </div>
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>Doc 1 :</strong></span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <select id="q1_doc1" data-qid="q1_doc1" class="tech-select" onchange="onUserAnswerChange(this)">
+                                <option value="">-- Choisir le type de document --</option>
+                                <option value="Plan de masse">Plan de masse</option>
+                                <option value="Plan de localisation">Plan de localisation</option>
+                                <option value="Plan de façades">Plan de façades</option>
+                                <option value="Plan de coupe">Plan de coupe</option>
+                            </select>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>Doc 2 :</strong></span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <select id="q1_doc2" data-qid="q1_doc2" class="tech-select" onchange="onUserAnswerChange(this)">
+                                <option value="">-- Choisir le type de document --</option>
+                                <option value="Plan de situation">Plan de situation</option>
+                                <option value="Plan de localisation">Plan de localisation</option>
+                                <option value="Plan de masse">Plan de masse</option>
+                                <option value="Coupe de niveau">Coupe de niveau</option>
+                            </select>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>2 -</strong> Rechercher l'orientation de la façade principale à l'aide du document 2 :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <select id="q2_orientation" data-qid="q2_orientation" class="tech-select" onchange="onUserAnswerChange(this)">
+                                <option value="">-- Sélectionner l'orientation (Doc 2) --</option>
+                                <option value="Sud-Est">Sud-Est</option>
+                                <option value="Nord-Est">Nord-Est</option>
+                                <option value="Nord-Ouest">Nord-Ouest</option>
+                                <option value="Sud-Ouest">Sud-Ouest</option>
+                                <option value="Nord">Nord</option>
+                                <option value="Sud">Sud</option>
+                            </select>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>3 -</strong> Donner l'échelle du document 2 :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <select id="q3_echelle" data-qid="q3_echelle" class="tech-select" onchange="onUserAnswerChange(this)" style="width: 45%;">
+                                    <option value="">-- Échelle --</option>
+                                    <option value="1 : 100">1 : 100</option>
+                                    <option value="1 : 50">1 : 50</option>
+                                    <option value="1 : 500">1 : 500</option>
+                                    <option value="1 : 200">1 : 200</option>
+                                </select>
+                                <select id="q3_signification" data-qid="q3_signification" class="tech-select" onchange="onUserAnswerChange(this)" style="width: 55%;">
+                                    <option value="">-- 1 cm correspond à... --</option>
+                                    <option value="50 cm sur le terrain">50 cm sur le terrain (0,5 m)</option>
+                                    <option value="100 cm sur le terrain">100 cm sur le terrain (1 m)</option>
+                                    <option value="5000 cm sur le terrain">5000 cm sur le terrain (50 m)</option>
+                                    <option value="500 cm sur le terrain">500 cm sur le terrain (5 m)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <!-- Footer A4 -->
+                <table class="footer-table">
+                    <tr>
+                        <td style="width: 50%;" class="footer-filiere-text">Lycée Professionnel — Enseignement Technique Bac Pro MELEC</td>
+                        <td style="width: 50%; text-align: right;">Page 4 / 8 — Exercice 1 : Situation géographique & Orientation</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- -----------------------------------------------------------------
+                 PAGE 5 : EXERCICE 2 — ÉTUDE DE LA CONSTRUCTION DU BÂTIMENT
+                 ----------------------------------------------------------------- -->
+            <div class="a4-page" id="page-5-exercices-2">
+                <div>
+                    <!-- En-tête officiel -->
+                    <table class="header-table">
+                        <tr>
+                            <td style="width: 25%; font-weight: 800; font-size: 11.5px; background: #f8fafc; color: var(--primary); line-height: 1.35;">
+                                Lycée Professionnel<br>
+                                <span style="font-size: 10.5px; color: #475569; font-weight: 600;">Académie de Versailles</span><br>
+                                <span class="header-filiere-label" style="font-size: 11.5px; color: #0284c7; font-weight: 700;">Bac Pro MELEC</span>
+                            </td>
+                            <td style="width: 50%;" class="header-title">
+                                <span>TP 03 : RÉSEAU D'ASSAINISSEMENT</span>
+                                <span class="header-sub">2ème Partie : Étude de la construction du bâtiment</span>
+                            </td>
+                            <td style="width: 25%; font-size: 11px; background: #f8fafc; line-height: 1.35;">
+                                <strong>M. DIAKHO</strong>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="section-box" style="margin-bottom: 5px; padding: 4px 8px;">
+                        <div class="section-title" style="margin-bottom: 2px;">
+                            <span class="badge-partie">EXERCICE 2</span> ÉLÉMENTS DE CONSTRUCTION, NIVEAUX & VUES
+                            <span class="pts-badge" style="margin-left: auto;">5.0 POINTS (C1)</span>
+                        </div>
+                        <p style="margin: 2px 0 0 0; font-size: 12px; color: #1e293b;">
+                            <strong>Consigne :</strong> À l'aide du document ressource <strong>DR 2/3</strong> (Plans du sous-sol et du rez-de-chaussée), répondez avec précision aux questions technologiques.
+                        </p>
+                    </div>
+
+                    <!-- Planche Technique DR 2/3 -->
+                    <div class="plan-frame" style="height: 470px; margin-bottom: 6px;">
+                        <div class="img-shield-overlay" onclick="ouvrirZoomPlan('img/dr2_plans_ss_rdc.png', 'DR 2/3 : Plans du Sous-sol et du Rez-de-chaussée')"></div>
+                        <img id="img-plan-p5" src="img/dr2_plans_ss_rdc.png" alt="Dossier ressource DR 2/3" ondragstart="return false;" style="max-height: 460px;">
+                        <button class="zoom-btn-overlay" onclick="ouvrirZoomPlan('img/dr2_plans_ss_rdc.png', 'DR 2/3 : Plans du Sous-sol et du Rez-de-chaussée')">Zoom HD Plan (DR 2/3)</button>
+                    </div>
+
+                    <!-- Questions Exercice 2 -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 12px;">
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>4 -</strong> Donner le nom de l'élément de construction repéré par le chiffre <strong>5</strong> :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <select id="q4_rep_5" data-qid="q4_rep_5" class="tech-select" onchange="onUserAnswerChange(this)">
+                                <option value="">-- Nom de l'élément 5 --</option>
+                                <option value="Porte coulissante">Porte coulissante</option>
+                                <option value="Porte à 1 ventail">Porte à 1 ventail</option>
+                                <option value="Porte à 2 vantaux">Porte à 2 vantaux</option>
+                                <option value="Mur de refend">Mur de refend</option>
+                                <option value="Fenêtre 2 vantaux">Fenêtre 2 vantaux</option>
+                            </select>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>5 -</strong> Donner le nombre de niveaux de cette construction :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <select id="q5_niveaux" data-qid="q5_niveaux" class="tech-select" onchange="onUserAnswerChange(this)">
+                                <option value="">-- Nombre total de niveaux --</option>
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3 (Sous-sol, RDC, Combles)</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>6 -</strong> La coupe A-A est-elle une vue de droite ou une vue de gauche ? :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <select id="q6_vue_coupe" data-qid="q6_vue_coupe" class="tech-select" onchange="onUserAnswerChange(this)">
+                                <option value="">-- Vue de droite ou gauche ? --</option>
+                                <option value="Vue de gauche">Vue de gauche</option>
+                                <option value="Vue de droite">Vue de droite</option>
+                                <option value="Vue de face">Vue de face</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <!-- Footer A4 -->
+                <table class="footer-table">
+                    <tr>
+                        <td style="width: 50%;" class="footer-filiere-text">Lycée Professionnel — Enseignement Technique Bac Pro MELEC</td>
+                        <td style="width: 50%; text-align: right;">Page 5 / 8 — Exercice 2 : Construction & Niveaux du bâtiment</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- -----------------------------------------------------------------
+                 PAGE 6 : EXERCICE 3 — ÉTUDE DE LA COTATION & SURFACES
+                 ----------------------------------------------------------------- -->
+            <div class="a4-page" id="page-6-exercices-3">
+                <div>
+                    <!-- En-tête officiel -->
+                    <table class="header-table">
+                        <tr>
+                            <td style="width: 25%; font-weight: 800; font-size: 11.5px; background: #f8fafc; color: var(--primary); line-height: 1.35;">
+                                Lycée Professionnel<br>
+                                <span style="font-size: 10.5px; color: #475569; font-weight: 600;">Académie de Versailles</span><br>
+                                <span class="header-filiere-label" style="font-size: 11.5px; color: #0284c7; font-weight: 700;">Bac Pro MELEC</span>
+                            </td>
+                            <td style="width: 50%;" class="header-title">
+                                <span>TP 03 : RÉSEAU D'ASSAINISSEMENT</span>
+                                <span class="header-sub">3ème Partie : Étude de la cotation, surfaces & dimensions</span>
+                            </td>
+                            <td style="width: 25%; font-size: 11px; background: #f8fafc; line-height: 1.35;">
+                                <strong>M. DIAKHO</strong>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="section-box" style="margin-bottom: 5px; padding: 4px 8px;">
+                        <div class="section-title" style="margin-bottom: 2px;">
+                            <span class="badge-partie">EXERCICE 3</span> COTES ALTIMÉTRIQUES, ÉPAISSEURS, SURFACE & BAIES
+                            <span class="pts-badge" style="margin-left: auto;">6.0 POINTS (C2 / C1)</span>
+                        </div>
+                        <p style="margin: 2px 0 0 0; font-size: 12px; color: #1e293b;">
+                            <strong>Consigne :</strong> À l'aide de la coupe <strong>COUPE A-A (DR 3/3)</strong> et du <strong>PLAN DU RDC (DR 2/3)</strong>, relevez et calculez les grandeurs demandées.
+                        </p>
+                    </div>
+
+                    <!-- Planche Technique Coupe A-A -->
+                    <div class="plan-frame" style="height: 360px; margin-bottom: 6px;">
+                        <div class="img-shield-overlay" onclick="ouvrirZoomPlan('img/coupe_aa.png', 'Coupe A-A : Cotes altimétriques, épaisseurs et niveaux')"></div>
+                        <img id="img-plan-p6" src="img/coupe_aa.png" alt="Coupe A-A du pavillon" ondragstart="return false;" style="max-height: 350px;">
+                        <button class="zoom-btn-overlay" onclick="ouvrirZoomPlan('img/coupe_aa.png', 'Coupe A-A : Cotes altimétriques, épaisseurs et niveaux')">Zoom HD Coupe A-A</button>
+                    </div>
+
+                    <!-- Questions Exercice 3 en grille compacte -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 12px;">
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>8 -</strong> Rechercher la hauteur du pavillon par rapport au terrain naturel :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <input type="text" id="q8_hauteur_pavillon" data-qid="q8_hauteur_pavillon" class="tech-select" placeholder="Hauteur en m" oninput="onUserAnswerChange(this)">
+                                <span style="font-weight: 700; color: #475569;">m</span>
+                            </div>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>9 -</strong> Rechercher la cote de niveau du plancher des combles :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <input type="text" id="q9_cote_combles" data-qid="q9_cote_combles" class="tech-select" placeholder="Cote en m" oninput="onUserAnswerChange(this)">
+                                <span style="font-weight: 700; color: #475569;">m</span>
+                            </div>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>10 -</strong> Donner l'épaisseur des éléments de construction suivants (indiquer les unités) :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <input type="text" id="q10_epaisseur_rdc" data-qid="q10_epaisseur_rdc" class="tech-select" placeholder="Plancher RDC (en cm)" oninput="onUserAnswerChange(this)" style="width: 50%;">
+                                <input type="text" id="q10_epaisseur_murs_ss" data-qid="q10_epaisseur_murs_ss" class="tech-select" placeholder="Murs S/S (en cm)" oninput="onUserAnswerChange(this)" style="width: 50%;">
+                            </div>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>11 -</strong> Calculer la cote repérée “C” du plan du RDC :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <input type="text" id="q11_cote_c" data-qid="q11_cote_c" class="tech-select" placeholder="Cote C en m" oninput="onUserAnswerChange(this)">
+                                <span style="font-weight: 700; color: #475569;">m</span>
+                            </div>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>12 -</strong> Calculer la surface de la chambre 1 :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <input type="text" id="q12_surface_ch1" data-qid="q12_surface_ch1" class="tech-select" placeholder="Surface en m²" oninput="onUserAnswerChange(this)">
+                                <span style="font-weight: 700; color: #475569;">m²</span>
+                            </div>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>13 -</strong> Donner les dimensions en cm (largeur x hauteur : exemple 85 x 135) des baies suivantes :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <input type="text" id="q13_dim_ch2" data-qid="q13_dim_ch2" class="tech-select" placeholder="Chambre 2 (L x H)" oninput="onUserAnswerChange(this)" style="width: 50%;">
+                                <input type="text" id="q13_dim_salon" data-qid="q13_dim_salon" class="tech-select" placeholder="Salon (L x H)" oninput="onUserAnswerChange(this)" style="width: 50%;">
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <!-- Footer A4 -->
+                <table class="footer-table">
+                    <tr>
+                        <td style="width: 50%;" class="footer-filiere-text">Lycée Professionnel — Enseignement Technique Bac Pro MELEC</td>
+                        <td style="width: 50%; text-align: right;">Page 6 / 8 — Exercice 3 : Cotation, Surfaces & Baies</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- -----------------------------------------------------------------
+                 PAGE 7 : EXERCICE 4 — ÉTUDE DES ESCALIERS & OUVERTURES
+                 ----------------------------------------------------------------- -->
+            <div class="a4-page" id="page-7-exercices-4">
+                <div>
+                    <!-- En-tête officiel -->
+                    <table class="header-table">
+                        <tr>
+                            <td style="width: 25%; font-weight: 800; font-size: 11.5px; background: #f8fafc; color: var(--primary); line-height: 1.35;">
+                                Lycée Professionnel<br>
+                                <span style="font-size: 10.5px; color: #475569; font-weight: 600;">Académie de Versailles</span><br>
+                                <span class="header-filiere-label" style="font-size: 11.5px; color: #0284c7; font-weight: 700;">Bac Pro MELEC</span>
+                            </td>
+                            <td style="width: 50%;" class="header-title">
+                                <span>TP 03 : RÉSEAU D'ASSAINISSEMENT</span>
+                                <span class="header-sub">4ème Partie : Étude des escaliers & Sens d'ouverture</span>
+                            </td>
+                            <td style="width: 25%; font-size: 11px; background: #f8fafc; line-height: 1.35;">
+                                <strong>M. DIAKHO</strong>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="section-box" style="margin-bottom: 5px; padding: 4px 8px;">
+                        <div class="section-title" style="margin-bottom: 2px;">
+                            <span class="badge-partie">EXERCICE 4</span> CARACTÉRISTIQUES DES MARCHES & OUVERTURES
+                            <span class="pts-badge" style="margin-left: auto;">4.0 POINTS (C2 / C1)</span>
+                        </div>
+                        <p style="margin: 2px 0 0 0; font-size: 12px; color: #1e293b;">
+                            <strong>Consigne :</strong> Analysez la conception des escaliers balancés et déterminez le sens d'ouverture de la porte d'accès au sous-sol d'après le schéma ressource.
+                        </p>
+                    </div>
+
+                    <!-- Double Planche Technique : Escaliers + Schéma d'ouverture -->
+                    <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 8px; margin-bottom: 6px;">
+                        <div class="plan-frame" style="height: 390px;">
+                            <div class="img-shield-overlay" onclick="ouvrirZoomPlan('img/coupe_aa.png', 'Coupe A-A : Trémie et escaliers balancés')"></div>
+                            <img src="img/coupe_aa.png" alt="Escaliers sur coupe A-A" ondragstart="return false;" style="max-height: 380px;">
+                            <button class="zoom-btn-overlay" onclick="ouvrirZoomPlan('img/coupe_aa.png', 'Coupe A-A : Trémie et escaliers balancés')">Zoom Escaliers</button>
+                        </div>
+                        <div class="plan-frame" style="height: 390px; background: #ffffff;">
+                            <div class="img-shield-overlay" onclick="ouvrirZoomPlan('img/schema_sens_ouverture_porte.png', 'Schéma normalisé : Sens d\'ouverture d\'une porte battante')"></div>
+                            <img src="img/schema_sens_ouverture_porte.png" alt="Schéma d'ouverture de porte" ondragstart="return false;" style="max-height: 350px;">
+                            <button class="zoom-btn-overlay" onclick="ouvrirZoomPlan('img/schema_sens_ouverture_porte.png', 'Schéma normalisé : Sens d\'ouverture d\'une porte battante')">Zoom Règle Portes</button>
+                        </div>
+                    </div>
+
+                    <!-- Questions Exercice 4 -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 12px;">
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>14 -</strong> Donner le nombre d'escaliers de ce pavillon : et leur type :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <div style="display: flex; gap: 6px;">
+                                <select id="q14_nb_escaliers" data-qid="q14_nb_escaliers" class="tech-select" onchange="onUserAnswerChange(this)" style="width: 40%;">
+                                    <option value="">-- Nb --</option>
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                </select>
+                                <select id="q14_type_escaliers" data-qid="q14_type_escaliers" class="tech-select" onchange="onUserAnswerChange(this)" style="width: 60%;">
+                                    <option value="">-- Type d'escalier --</option>
+                                    <option value="Escaliers droits">Escaliers droits</option>
+                                    <option value="Escaliers hélicoïdaux">Escaliers hélicoïdaux</option>
+                                    <option value="Escaliers balancés">Escaliers balancés</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>15 -</strong> Sachant que l'escalier d'accès aux combles est composé de 14 marches : Calculer la hauteur d'une marche de ces escaliers :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <input type="text" id="q15_hauteur_marche" data-qid="q15_hauteur_marche" class="tech-select" placeholder="Hauteur en cm" oninput="onUserAnswerChange(this)">
+                                <span style="font-weight: 700; color: #475569;">cm</span>
+                            </div>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>16 -</strong> Indiquer la pièce du RDC sur laquelle débouche l'escalier d'accès depuis le S/S :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <select id="q16_piece_rdc" data-qid="q16_piece_rdc" class="tech-select" onchange="onUserAnswerChange(this)">
+                                <option value="">-- Sélectionner la pièce d'arrivée --</option>
+                                <option value="le salon">Le salon</option>
+                                <option value="l'entrée">L'entrée</option>
+                                <option value="le couloir">Le couloir</option>
+                                <option value="la cuisine">La cuisine</option>
+                            </select>
+                        </div>
+
+                        <div class="question-card">
+                            <div class="question-title">
+                                <span><strong>17 -</strong> À partir des informations ci-contre : Indiquer le sens d'ouverture de la porte d'accès aux escaliers du sous-sol :</span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <select id="q17_sens_porte" data-qid="q17_sens_porte" class="tech-select" onchange="onUserAnswerChange(this)">
+                                <option value="">-- Sens d'ouverture normalisé --</option>
+                                <option value="Poussant droit">Poussant droit</option>
+                                <option value="Tirant gauche ou ouvrant droit">Tirant gauche (ou ouvrant droit)</option>
+                                <option value="Tirant droit ou ouvrant gauche">Tirant droit (ou ouvrant gauche)</option>
+                                <option value="Poussant gauche">Poussant gauche</option>
+                            </select>
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <!-- Footer A4 -->
+                <table class="footer-table">
+                    <tr>
+                        <td style="width: 50%;" class="footer-filiere-text">Lycée Professionnel — Enseignement Technique Bac Pro MELEC</td>
+                        <td style="width: 50%; text-align: right;">Page 7 / 8 — Exercice 4 : Escaliers & Ouvertures</td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- -----------------------------------------------------------------
+                 PAGE 8 : EXERCICE 5 — ÉTUDE DU RÉSEAU D'ASSAINISSEMENT
+                 ----------------------------------------------------------------- -->
+            <div class="a4-page" id="page-8-exercices-5">
+                <div>
+                    <!-- En-tête officiel -->
+                    <table class="header-table">
+                        <tr>
+                            <td style="width: 25%; font-weight: 800; font-size: 11.5px; background: #f8fafc; color: var(--primary); line-height: 1.35;">
+                                Lycée Professionnel<br>
+                                <span style="font-size: 10.5px; color: #475569; font-weight: 600;">Académie de Versailles</span><br>
+                                <span class="header-filiere-label" style="font-size: 11.5px; color: #0284c7; font-weight: 700;">Bac Pro MELEC</span>
+                            </td>
+                            <td style="width: 50%;" class="header-title">
+                                <span>TP 03 : RÉSEAU D'ASSAINISSEMENT</span>
+                                <span class="header-sub">5ème Partie : Étude du réseau d'assainissement (EU, EV, EP)</span>
+                            </td>
+                            <td style="width: 25%; font-size: 11px; background: #f8fafc; line-height: 1.35;">
+                                <strong>M. DIAKHO</strong>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="section-box" style="margin-bottom: 5px; padding: 4px 8px;">
+                        <div class="section-title" style="margin-bottom: 2px;">
+                            <span class="badge-partie">EXERCICE 5</span> COLLECTE SÉPARATIVE & CANALISATIONS DU RÉSEAU
+                            <span class="pts-badge" style="margin-left: auto;">7.0 POINTS (C2 / C1)</span>
+                        </div>
+                        <p style="margin: 2px 0 0 0; font-size: 12px; color: #1e293b;">
+                            <strong>Consigne :</strong> À partir du réseau d'assainissement en ressource <strong>DR 3/3</strong>, définissez la provenance de chaque effluent et qualifiez les tuyaux <strong>T1 à T8</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Planche Technique Schéma d'assainissement -->
+                    <div class="plan-frame" style="height: 360px; margin-bottom: 6px;">
+                        <div class="img-shield-overlay" onclick="ouvrirZoomPlan('img/schema_reseau_assainissement.png', 'DR 3/3 : Schéma d\'implantation du réseau d\'assainissement')"></div>
+                        <img id="img-plan-p8" src="img/schema_reseau_assainissement.png" alt="Réseau d'assainissement tuyaux T1 à T8" ondragstart="return false;" style="max-height: 350px;">
+                        <button class="zoom-btn-overlay" onclick="ouvrirZoomPlan('img/schema_reseau_assainissement.png', 'DR 3/3 : Schéma d\'implantation du réseau d\'assainissement')">Zoom Réseau Assainissement</button>
+                    </div>
+
+                    <!-- Questions Q18 (Origine des effluents) -->
+                    <div style="font-weight: 700; color: #1e3a8a; font-size: 12.5px; margin-bottom: 3px;">
+                        18 - Donner la provenance des évacuations suivantes :
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; font-size: 11.5px; margin-bottom: 6px;">
+                        <div class="question-card" style="margin-bottom: 0;">
+                            <div class="question-title">
+                                <span><strong>Évacuation des eaux usées (EU) :</strong></span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <select id="q18_evac_eu" data-qid="q18_evac_eu" class="tech-select" onchange="onUserAnswerChange(this)">
+                                <option value="">-- Provenance EU --</option>
+                                <option value="eaux des WC">Eaux des WC (toilettes)</option>
+                                <option value="eaux des lavabos, éviers, baignoires, ...">Eaux ménagères : lavabos, éviers, baignoires, douches...</option>
+                                <option value="eaux des pluies (goutières)">Eaux des pluies (gouttières)</option>
+                            </select>
+                        </div>
+
+                        <div class="question-card" style="margin-bottom: 0;">
+                            <div class="question-title">
+                                <span><strong>Évacuation des eaux vannes (EV) :</strong></span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <select id="q18_evac_ev" data-qid="q18_evac_ev" class="tech-select" onchange="onUserAnswerChange(this)">
+                                <option value="">-- Provenance EV --</option>
+                                <option value="eaux des lavabos, éviers, baignoires, ...">Eaux ménagères : lavabos, éviers</option>
+                                <option value="eaux des pluies (goutières)">Eaux des pluies (gouttières)</option>
+                                <option value="eaux des WC">Eaux des WC (matières fécales / toilettes)</option>
+                            </select>
+                        </div>
+
+                        <div class="question-card" style="margin-bottom: 0;">
+                            <div class="question-title">
+                                <span><strong>Évacuation des eaux pluviales (EP) :</strong></span>
+                                <span class="pts-badge">1.0 PT</span>
+                            </div>
+                            <select id="q18_evac_ep" data-qid="q18_evac_ep" class="tech-select" onchange="onUserAnswerChange(this)">
+                                <option value="">-- Provenance EP --</option>
+                                <option value="eaux des WC">Eaux des WC</option>
+                                <option value="eaux des pluies (goutières)">Eaux des pluies (gouttières / toiture)</option>
+                                <option value="eaux des lavabos, éviers, baignoires, ...">Eaux des lavabos et éviers</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Question Q19 : Tableau d'affectation des tuyaux T1 à T8 -->
+                    <div class="question-card" style="margin-bottom: 2px;">
+                        <div class="question-title" style="margin-bottom: 3px;">
+                            <span><strong>19 -</strong> Compléter le tableau ci-dessous (mettre une croix dans chaque case) :</span>
+                            <span class="pts-badge">4.0 PTS (8 x 0.5 PT)</span>
+                        </div>
+                        <table class="tech-table" style="text-align: center; font-size: 12px;">
+                            <thead>
+                                <tr style="background: #1e3a8a; color: white;">
+                                    <th style="width: 14%; text-align: left; padding-left: 8px;">Tuyau</th>
+                                    <th>T1</th><th>T2</th><th>T3</th><th>T4</th><th>T5</th><th>T6</th><th>T7</th><th>T8</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td style="font-weight: 700; text-align: left; padding-left: 8px; background: #f8fafc;">Effluent</td>
+                                    <td>
+                                        <select id="q19_t1" data-qid="q19_t1" class="tech-select" onchange="onUserAnswerChange(this)" style="padding: 2px 4px; font-weight: 800; text-align: center;">
+                                            <option value="">--</option>
+                                            <option value="EU">EU</option>
+                                            <option value="EV">EV</option>
+                                            <option value="EP">EP</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select id="q19_t2" data-qid="q19_t2" class="tech-select" onchange="onUserAnswerChange(this)" style="padding: 2px 4px; font-weight: 800; text-align: center;">
+                                            <option value="">--</option>
+                                            <option value="EU">EU</option>
+                                            <option value="EV">EV</option>
+                                            <option value="EP">EP</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select id="q19_t3" data-qid="q19_t3" class="tech-select" onchange="onUserAnswerChange(this)" style="padding: 2px 4px; font-weight: 800; text-align: center;">
+                                            <option value="">--</option>
+                                            <option value="EU">EU</option>
+                                            <option value="EV">EV</option>
+                                            <option value="EP">EP</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select id="q19_t4" data-qid="q19_t4" class="tech-select" onchange="onUserAnswerChange(this)" style="padding: 2px 4px; font-weight: 800; text-align: center;">
+                                            <option value="">--</option>
+                                            <option value="EU">EU</option>
+                                            <option value="EV">EV</option>
+                                            <option value="EP">EP</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select id="q19_t5" data-qid="q19_t5" class="tech-select" onchange="onUserAnswerChange(this)" style="padding: 2px 4px; font-weight: 800; text-align: center;">
+                                            <option value="">--</option>
+                                            <option value="EU">EU</option>
+                                            <option value="EV">EV</option>
+                                            <option value="EP">EP</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select id="q19_t6" data-qid="q19_t6" class="tech-select" onchange="onUserAnswerChange(this)" style="padding: 2px 4px; font-weight: 800; text-align: center;">
+                                            <option value="">--</option>
+                                            <option value="EU">EU</option>
+                                            <option value="EV">EV</option>
+                                            <option value="EP">EP</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select id="q19_t7" data-qid="q19_t7" class="tech-select" onchange="onUserAnswerChange(this)" style="padding: 2px 4px; font-weight: 800; text-align: center;">
+                                            <option value="">--</option>
+                                            <option value="EU">EU</option>
+                                            <option value="EV">EV</option>
+                                            <option value="EP">EP</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select id="q19_t8" data-qid="q19_t8" class="tech-select" onchange="onUserAnswerChange(this)" style="padding: 2px 4px; font-weight: 800; text-align: center;">
+                                            <option value="">--</option>
+                                            <option value="EU">EU</option>
+                                            <option value="EV">EV</option>
+                                            <option value="EP">EP</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+
+                </div>
+
+                <!-- Footer A4 -->
+                <table class="footer-table">
+                    <tr>
+                        <td style="width: 50%;" class="footer-filiere-text">Lycée Professionnel — Enseignement Technique Bac Pro MELEC</td>
+                        <td style="width: 50%; text-align: right;">Page 8 / 8 — Exercice 5 : Réseau d'assainissement & Canalisations</td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+        <!-- === FIN ZONE EXERCICES MODULAIRES === -->
+
+    </div>
+    <!-- FIN CONTENEUR DES PAGES -->
+
+    <!-- Modal Visualiseur Zoom Plein Écran -->
+    <div id="zoom-modal" class="zoom-modal" onclick="fermerZoomPlan(event)">
+        <div class="zoom-modal-header" onclick="event.stopPropagation()">
+            <span id="zoom-modal-title">Visualiseur Haute Définition</span>
+            <div class="zoom-modal-toolbar">
+                <button onclick="zoomModifier(0.25)">Zoom +</button>
+                <button onclick="zoomModifier(-0.25)">Zoom -</button>
+                <button onclick="zoomReinitialiser()">↺ Réinitialiser</button>
+                <button onclick="fermerZoomPlan(event)" style="background: #dc2626;">Fermer</button>
+            </div>
+        </div>
+        <div id="zoom-modal-body" class="zoom-modal-body" onmousedown="zoomStartPan(event)">
+            <img id="zoom-modal-img" src="" alt="Agrandissement HD" ondragstart="return false;">
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         MOTEUR JAVASCRIPT : CONFIGURATION, SSE STREAMING, INDICES & SÉCURITÉ
+         ========================================================================= -->
+    <script>
+        /* =========================================================================
+           1. COMPÉTENCES OFFICIELLES PAR FILIÈRE (MELEC & MFER)
+           ========================================================================= */
+        const COMPETENCES_MELEC = [
+            { 
+                code: "C1", 
+                libelle: "Compétence C1 — Analyser les conditions de l'opération et son contexte", 
+                descriptionBilan: "Décoder les plans architecturaux, situer le pavillon, identifier l'orientation, les niveaux, les cotes, surfaces et réseaux d'assainissement", 
+                mode: "auto_ia" 
+            },
+            { 
+                code: "C2", 
+                libelle: "Compétence C2 — Organiser le poste de travail et sécuriser l'opération", 
+                descriptionBilan: "Porte-documents complet présent, outillage de traçage, règle et calculatrice présents", 
+                mode: "cases_prof" 
+            }
+        ];
+
+        const COMPETENCES_MFER = [
+            { 
+                code: "C1", 
+                libelle: "Compétence C1 — Analyser les conditions de l'opération et son contexte", 
+                descriptionBilan: "Identifier l'environnement géographique, l'implantation du pavillon, l'accès au chantier et l'orientation des façades", 
+                mode: "auto_ia" 
+            },
+            { 
+                code: "C2", 
+                libelle: "Compétence C2 — Analyser et exploiter les données techniques de l'intervention", 
+                descriptionBilan: "Décoder la cotation, calculer hauteurs et surfaces thermiques, classifier et affecter les canalisations EU, EV, EP", 
+                mode: "auto_ia" 
+            },
+            { 
+                code: "C4", 
+                libelle: "Compétence C4 — Organiser et sécuriser son intervention", 
+                descriptionBilan: "Porte-documents complet présent, outillage de traçage, règle et calculatrice présents", 
+                mode: "cases_prof" 
+            }
+        ];
+
+        /* =========================================================================
+           2. CONFIGURATION CENTRALISÉE (CONFIG_TD)
+           ========================================================================= */
+        const CONFIG_TD = {
+            urlRelais: "https://relais-td.onrender.com/soumettre-td-stream",
+            codeTD: "TP03_Assainissement",
+            titreCourtDock: "TP 03 ASSAINISSEMENT — MELEC",
+            titreOfficiel: "TP 03 : RÉSEAU D'ASSAINISSEMENT & LECTURE DE PLANS DE BÂTIMENT",
+            filiereCode: "MELEC",
+            filiere: "Bac Pro MELEC",
+            ficheSyntheseUrl: "Fiche_Synthese.html",
+            totalPointsBruts: 24.0,
+            penaliteParIndice: 0.0,
+            indicesGratuits: 0,
+            competences: COMPETENCES_MELEC,
+            baremeQuestions: {
+                // Partie 1 (4.0 pts)
+                "q1_doc1": { points: 1.0, type: "select", valeur: "Plan de localisation", valeurs: ["plan de localisation", "plan de situation", "localisation"] },
+                "q1_doc2": { points: 1.0, type: "select", valeur: "Plan de masse", valeurs: ["plan de masse", "masse"] },
+                "q2_orientation": { points: 1.0, type: "select", valeur: "Nord-Ouest", valeurs: ["nord-ouest", "nord ouest"] },
+                "q3_echelle": { points: 0.5, type: "select", valeur: "1 : 500", valeurs: ["1 : 500", "1:500", "1/500"] },
+                "q3_signification": { points: 0.5, type: "select", valeur: "500 cm sur le terrain", valeurs: ["500 cm sur le terrain", "500 cm", "5 m", "5m"] },
+
+                // Partie 2 (3.0 pts)
+                "q4_rep_5": { points: 1.0, type: "select", valeur: "Porte à 1 ventail", valeurs: ["porte à 1 ventail", "porte 1 ventail", "porte à un ventail"] },
+                "q5_niveaux": { points: 1.0, type: "select", valeur: "3", valeurs: ["3", "3 (sous-sol, rdc, combles)", "trois"] },
+                "q6_vue_coupe": { points: 1.0, type: "select", valeur: "Vue de droite", valeurs: ["vue de droite", "droite"] },
+
+                // Partie 3 (6.0 pts)
+                "q8_hauteur_pavillon": { points: 1.0, type: "number", valeur: "7.90", valeurs: ["7.90", "7.9", "7,90", "7,9", "+7.90", "+7.9", "+ 7,90 m", "7.90 m"] },
+                "q9_cote_combles": { points: 1.0, type: "number", valeur: "2.72", valeurs: ["2.72", "2,72", "+2.72", "+ 2,72 m", "2.72 m"] },
+                "q10_epaisseur_rdc": { points: 0.5, type: "number", valeur: "30 cm", valeurs: ["30", "30 cm", "30cm", "0.30", "0,30", "0.30 m", "0,30 m", "300 mm"] },
+                "q10_epaisseur_murs_ss": { points: 0.5, type: "number", valeur: "22 cm", valeurs: ["22", "22 cm", "22cm", "0.22", "0,22", "0.22 m", "0,22 m", "220 mm"] },
+                "q11_cote_c": { points: 1.0, type: "number", valeur: "4.16", valeurs: ["4.16", "4,16", "4.16 m", "4,16 m"] },
+                "q12_surface_ch1": { points: 1.0, type: "number", valeur: "11.2", valeurs: ["11.2", "11,2", "11.2 m²", "11,2 m2", "11.20"] },
+                "q13_dim_ch2": { points: 0.5, type: "text", valeur: "100 x 135", valeurs: ["100 x 135", "100x135", "100 * 135", "100*135", "100/135"] },
+                "q13_dim_salon": { points: 0.5, type: "text", valeur: "120 x 215", valeurs: ["120 x 215", "120x215", "120 * 215", "120*215", "120/215"] },
+
+                // Partie 4 (4.0 pts)
+                "q14_nb_escaliers": { points: 0.5, type: "select", valeur: "2", valeurs: ["2", "deux"] },
+                "q14_type_escaliers": { points: 0.5, type: "select", valeur: "Escaliers balancés", valeurs: ["escaliers balancés", "balancés", "escalier balancé"] },
+                "q15_hauteur_marche": { points: 1.0, type: "number", valeur: "19.4", valeurs: ["19.4", "19,4", "19.43", "19,43", "19.4 cm", "19,4 cm"] },
+                "q16_piece_rdc": { points: 1.0, type: "select", valeur: "le couloir", valeurs: ["le couloir", "couloir", "le dégagement", "dégagement", "le degagement"] },
+                "q17_sens_porte": { points: 1.0, type: "select", valeur: "Tirant droit ou ouvrant gauche", valeurs: ["tirant droit ou ouvrant gauche", "tirant droit", "ouvrant gauche"] },
+
+                // Partie 5 (7.0 pts)
+                "q18_evac_eu": { points: 1.0, type: "select", valeur: "eaux des lavabos, éviers, baignoires, ...", valeurs: ["eaux des lavabos, éviers, baignoires, ...", "eaux ménagères", "lavabos"] },
+                "q18_evac_ev": { points: 1.0, type: "select", valeur: "eaux des WC", valeurs: ["eaux des wc", "wc", "eaux vannes", "toilettes"] },
+                "q18_evac_ep": { points: 1.0, type: "select", valeur: "eaux des pluies (goutières)", valeurs: ["eaux des pluies (goutières)", "eaux des pluies", "gouttières", "eaux pluviales"] },
+
+                // Q19 : Tableau T1 à T8 (8 x 0.5 pt = 4.0 pts)
+                "q19_t1": { points: 0.5, type: "select", valeur: "EP" },
+                "q19_t2": { points: 0.5, type: "select", valeur: "EV" },
+                "q19_t3": { points: 0.5, type: "select", valeur: "EP" },
+                "q19_t4": { points: 0.5, type: "select", valeur: "EU" },
+                "q19_t5": { points: 0.5, type: "select", valeur: "EP" },
+                "q19_t6": { points: 0.5, type: "select", valeur: "EP" },
+                "q19_t7": { points: 0.5, type: "select", valeur: "EU" },
+                "q19_t8": { points: 0.5, type: "select", valeur: "EU" }
+            }
+        };
+
+        // État dynamique du TD
+        let isDuoMode = false;
+        let loupeActive = false;
+        const indicesDebloquesSet = new Set();
+        let payloadDechiffreSecours = null;
+
+        const TOUTES_LES_PAGES = [
+            'page-1-garde',
+            'page-2-contexte',
+            'page-3-bilan',
+            'page-4-exercices-1',
+            'page-5-exercices-2',
+            'page-6-exercices-3',
+            'page-7-exercices-4',
+            'page-8-exercices-5'
+        ];
+
+        /* =========================================================================
+           3. SÉCURITÉ ANTI-TRICHE MAXIMALE & RGPD
+           ========================================================================= */
+        document.addEventListener('contextmenu', e => {
+            e.preventDefault();
+            return false;
+        });
+
+        document.addEventListener('keydown', e => {
+            if (
+                e.key === 'F12' ||
+                (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ||
+                (e.ctrlKey && ['U', 'S', 'P'].includes(e.key.toUpperCase()))
+            ) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+
+        /* =========================================================================
+           4. ADAPTATION DYNAMIQUE EXCLUSIVE DU CONTENU (MELEC vs MFER)
+           ========================================================================= */
+        function adapterFiliereSelonClasse(classe) {
+            const classesMelec = ['1MELEC1', '1MELEC2', '1MELFER MELEC', 'TMELEC1', 'TMELEC2'];
+            const isMelec = classesMelec.includes(classe);
+
+            CONFIG_TD.filiereCode = isMelec ? 'MELEC' : 'MFER';
+            CONFIG_TD.filiere = isMelec ? 'Bac Pro MELEC' : 'Bac Pro MFER';
+            CONFIG_TD.titreCourtDock = isMelec ? 'TP 03 ASSAINISSEMENT — MELEC' : 'TP 03 ASSAINISSEMENT — MFER';
+            CONFIG_TD.competences = isMelec ? COMPETENCES_MELEC : COMPETENCES_MFER;
+
+            // 1. Mise à jour de tous les labels de filière d'en-tête (Pages 1 à 8)
+            document.querySelectorAll('.header-filiere-label').forEach(el => {
+                el.innerText = CONFIG_TD.filiere;
+            });
+
+            // 2. Dock titre
+            const dockTitle = document.getElementById('dock-title-label');
+            if (dockTitle) dockTitle.innerText = CONFIG_TD.titreCourtDock;
+
+            // 3. Page 1 : Bascule exclusive de l'objectif
+            const objMelec = document.getElementById('objectif-melec');
+            const objMfer = document.getElementById('objectif-mfer');
+            if (objMelec && objMfer) {
+                objMelec.style.display = isMelec ? 'block' : 'none';
+                objMfer.style.display = isMelec ? 'none' : 'block';
+            }
+
+            // 4. Page 2 : Bascule exclusive des 3 cadres (Référentiel, Situation, Conditions)
+            const refMelec = document.getElementById('cadre-referentiel-melec');
+            const refMfer = document.getElementById('cadre-referentiel-mfer');
+            if (refMelec && refMfer) {
+                refMelec.style.display = isMelec ? 'block' : 'none';
+                refMfer.style.display = isMelec ? 'none' : 'block';
+            }
+
+            const sitMelec = document.getElementById('cadre-situation-melec');
+            const sitMfer = document.getElementById('cadre-situation-mfer');
+            if (sitMelec && sitMfer) {
+                sitMelec.style.display = isMelec ? 'block' : 'none';
+                sitMfer.style.display = isMelec ? 'none' : 'block';
+            }
+
+            const condMelec = document.getElementById('cadre-conditions-melec');
+            const condMfer = document.getElementById('cadre-conditions-mfer');
+            if (condMelec && condMfer) {
+                condMelec.style.display = isMelec ? 'block' : 'none';
+                condMfer.style.display = isMelec ? 'none' : 'block';
+            }
+
+            // 5. Page 3 : Badge filière et Titre de l'encadré d'organisation du poste
+            const badgeFiliereBilan = document.getElementById('badge-bilan-filiere');
+            if (badgeFiliereBilan) {
+                badgeFiliereBilan.innerText = CONFIG_TD.filiere;
+                badgeFiliereBilan.style.background = isMelec ? '#e0f2fe' : '#ccfbf1';
+                badgeFiliereBilan.style.color = isMelec ? '#0369a1' : '#0f766e';
+            }
+
+            const titleOrga = document.getElementById('title-organisation-poste');
+            if (titleOrga) {
+                titleOrga.innerText = isMelec
+                    ? "Compétence C2 — Organiser le poste de travail et sécuriser l'opération"
+                    : "Compétence C4 — Organiser et sécuriser son intervention";
+            }
+
+            // Régénération dynamique des lignes du tableau de compétences Page 3
+            const tbodyComp = document.querySelector('#table-bilan-competences tbody');
+            if (tbodyComp) {
+                tbodyComp.innerHTML = '';
+                CONFIG_TD.competences.forEach(comp => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td style="text-align: center; font-weight: 800; color: var(--primary); font-size: 13px;">${comp.code}</td>
+                        <td style="font-size: 12.5px;">
+                            <strong>${comp.libelle}</strong>
+                            <span style="color: #475569; display: block; font-size: 11.5px; margin-top: 1px;">${comp.descriptionBilan || ''}</span>
+                        </td>
+                        <td style="text-align: center;">
+                            <span id="eval-${comp.code.toLowerCase()}-palier" class="eval-badge eval-pending">EN ATTENTE</span>
+                        </td>
+                        <td id="eval-${comp.code.toLowerCase()}-pts" style="text-align: center; font-weight: 700; color: #475569; font-size: 12px;">Évalué</td>
+                    `;
+                    tbodyComp.appendChild(tr);
+                });
+            }
+
+            // 6. Pieds de page dynamiques sur l'ensemble des pages A4
+            document.querySelectorAll('.footer-filiere-text').forEach(ft => {
+                ft.innerText = `Lycée Professionnel — Enseignement Technique ${CONFIG_TD.filiere}`;
+            });
+
+            // 7. Mise à jour de l'état de validation de la compétence poste de travail
+            mettreAJourC2();
+        }
+
+        /* =========================================================================
+           5. GESTION DES 8 CLASSES ET DES GROUPES
+           ========================================================================= */
+        function toggleBinomeMode() {
+            const check = document.getElementById('check-binome');
+            const boxEleve2 = document.getElementById('box-eleve-2');
+            const badge = document.getElementById('badge-mode-travail');
+            isDuoMode = check.checked;
+
+            if (isDuoMode) {
+                boxEleve2.style.display = 'grid';
+                badge.innerText = 'Mode binôme (2 élèves)';
+                badge.style.background = '#dbeafe';
+                badge.style.color = '#1e40af';
+            } else {
+                boxEleve2.style.display = 'none';
+                badge.innerText = 'Mode individuel';
+                badge.style.background = '#e2e8f0';
+                badge.style.color = '#475569';
+            }
+            mettreAJourIdentite();
+        }
+
+        function mettreAJourIdentite() {
+            const nom1 = document.getElementById('student-nom').value.trim();
+            const prenom1 = document.getElementById('student-prenom').value.trim();
+            const classe = document.getElementById('student-classe').value;
+            const containerGroupe = document.getElementById('container-student-groupe');
+            const wrapperGroupeBilan = document.getElementById('bilan-groupe-wrapper');
+            const selectGroupe = document.getElementById('student-groupe');
+
+            const sansGroupe = (classe === '1MELFER MELEC' || classe === '1MELFER MFER');
+            if (sansGroupe) {
+                if (containerGroupe) containerGroupe.style.display = 'none';
+                if (wrapperGroupeBilan) wrapperGroupeBilan.style.display = 'none';
+            } else {
+                if (containerGroupe) containerGroupe.style.display = 'block';
+                if (wrapperGroupeBilan) wrapperGroupeBilan.style.display = 'inline';
+            }
+
+            let texteIdentite = nom1 ? (nom1.toUpperCase() + ' ' + prenom1) : '--';
+            if (isDuoMode) {
+                const nom2 = document.getElementById('student-nom2').value.trim();
+                const prenom2 = document.getElementById('student-prenom2').value.trim();
+                if (nom2) texteIdentite += ' & ' + nom2.toUpperCase() + ' ' + prenom2;
+            }
+
+            const bilanNom = document.getElementById('bilan-nom-eleve');
+            if (bilanNom) bilanNom.innerText = texteIdentite;
+
+            const bilanClasse = document.getElementById('bilan-classe-eleve');
+            if (bilanClasse) bilanClasse.innerText = classe || '--';
+
+            const bilanGroupe = document.getElementById('bilan-groupe-eleve');
+            if (bilanGroupe) bilanGroupe.innerText = sansGroupe ? '-' : (selectGroupe ? selectGroupe.value : '--');
+
+            // Adaptation dynamique et exclusive du contenu MELEC ou MFER
+            if (classe) {
+                adapterFiliereSelonClasse(classe);
+            }
+        }
+
+        function verifierChampsIdentite() {
+            const nom1 = document.getElementById('student-nom').value.trim();
+            const prenom1 = document.getElementById('student-prenom').value.trim();
+            const classe = document.getElementById('student-classe').value;
+            const selectGroupe = document.getElementById('student-groupe');
+            const groupeVal = selectGroupe ? selectGroupe.value : '';
+            const sansGroupe = (classe === '1MELFER MELEC' || classe === '1MELFER MFER');
+
+            if (!nom1 || !prenom1 || !classe) return false;
+            if (!sansGroupe && !groupeVal) return false;
+
+            if (isDuoMode) {
+                const nom2 = document.getElementById('student-nom2').value.trim();
+                const prenom2 = document.getElementById('student-prenom2').value.trim();
+                if (!nom2 || !prenom2) return false;
+            }
+            return true;
+        }
+
+        function construireNomFichierPDF() {
+            const classe = document.getElementById('student-classe').value.trim() || 'CLASSE';
+            const nom1 = document.getElementById('student-nom').value.trim().toUpperCase() || 'ELEVE1';
+            const prenom1 = document.getElementById('student-prenom').value.trim() || 'Prenom1';
+            const selectGroupe = document.getElementById('student-groupe');
+            const sansGroupe = (classe === '1MELFER MELEC' || classe === '1MELFER MFER');
+            const groupe = (!sansGroupe && selectGroupe) ? selectGroupe.value.replace(/\s+/g, '') : '';
+
+            let base = classe;
+            if (groupe) base += '_' + groupe;
+            base += '_' + nom1 + '_' + prenom1;
+
+            if (isDuoMode) {
+                const nom2 = document.getElementById('student-nom2').value.trim().toUpperCase() || 'ELEVE2';
+                const prenom2 = document.getElementById('student-prenom2').value.trim() || 'Prenom2';
+                base += '_ET_' + nom2 + '_' + prenom2;
+            }
+
+            base += '_' + CONFIG_TD.codeTD;
+            const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+            base += '_' + dateStr + '.pdf';
+            return base.replace(/[^a-zA-Z0-9_\-\.]/g, '_');
+        }
+
+        /* =========================================================================
+           6. MODES D'AFFICHAGE & NAVIGATION ONGLET
+           ========================================================================= */
+        function basculerModeAffichage(mode) {
+            document.body.classList.remove('mode-vertical', 'mode-single');
+            document.getElementById('btn-mode-lignes').classList.remove('active-mode');
+            document.getElementById('btn-mode-vertical').classList.remove('active-mode');
+            document.getElementById('btn-mode-single').classList.remove('active-mode');
+
+            if (mode === 'vertical') {
+                document.body.classList.add('mode-vertical');
+                document.getElementById('btn-mode-vertical').classList.add('active-mode');
+            } else if (mode === 'single') {
+                document.body.classList.add('mode-single');
+                document.getElementById('btn-mode-single').classList.add('active-mode');
+                naviguerVersPage('page-1-garde');
+            } else {
+                document.getElementById('btn-mode-lignes').classList.add('active-mode');
+            }
+        }
+
+        function naviguerVersPage(pageId) {
+            document.querySelectorAll('.dock-tab').forEach(tab => tab.classList.remove('active'));
+            const matchingTab = Array.from(document.querySelectorAll('.dock-tab')).find(t => t.getAttribute('onclick') && t.getAttribute('onclick').includes(pageId));
+            if (matchingTab) matchingTab.classList.add('active');
+
+            if (document.body.classList.contains('mode-single')) {
+                document.querySelectorAll('.a4-page').forEach(p => p.classList.remove('single-active'));
+                const target = document.getElementById(pageId);
+                if (target) {
+                    target.classList.add('single-active');
+                    window.scrollTo({ top: 60, behavior: 'smooth' });
+                }
+            } else {
+                const target = document.getElementById(pageId);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        }
+
+        function ouvrirFicheSynthese() {
+            if (CONFIG_TD.ficheSyntheseUrl) {
+                window.open(CONFIG_TD.ficheSyntheseUrl, '_blank');
+            }
+        }
+
+        /* =========================================================================
+           7. GESTION DES INDICES & CALCUL DU SCORE
+           ========================================================================= */
+        function toggleHint(hintBoxId, btnElem) {
+            const hintBox = document.getElementById(hintBoxId);
+            if (!hintBox) return;
+
+            const isOpen = hintBox.style.display === 'block';
+            if (isOpen) {
+                hintBox.style.display = 'none';
+                if (btnElem) btnElem.innerText = "Réafficher l'indice";
+            } else {
+                hintBox.style.display = 'block';
+                if (btnElem) btnElem.innerText = "Masquer l'indice";
+                indicesDebloquesSet.add(hintBoxId);
+                mettreAJourAffichageIndices();
+            }
+        }
+
+        function mettreAJourAffichageIndices() {
+            const nbUtilises = indicesDebloquesSet.size;
+            const gratuits = CONFIG_TD.indicesGratuits !== undefined ? CONFIG_TD.indicesGratuits : 3;
+            const payants = Math.max(0, nbUtilises - gratuits);
+            const penalite = (payants * (CONFIG_TD.penaliteParIndice || 0.25)).toFixed(2);
+
+            let txt = `${nbUtilises} utilisé${nbUtilises > 1 ? 's' : ''}`;
+            if (nbUtilises <= gratuits) {
+                txt += ` (${gratuits - nbUtilises} restant${(gratuits - nbUtilises) > 1 ? 's' : ''} gratuit${(gratuits - nbUtilises) > 1 ? 's' : ''})`;
+            } else {
+                txt += ` (${payants} payant${payants > 1 ? 's' : ''} = -${penalite} pt)`;
+            }
+
+            const dockElem = document.getElementById('dock-indices-count');
+            if (dockElem) dockElem.innerText = txt;
+
+            const p1Elem = document.getElementById('indices-count-p1');
+            if (p1Elem) p1Elem.innerText = txt;
+
+            const bilanDisplay = document.getElementById('indices-count-display');
+            if (bilanDisplay) {
+                bilanDisplay.innerText = `${nbUtilises} utilisé${nbUtilises > 1 ? 's' : ''} (${gratuits} gratuits, ${penalite} pt déduit)`;
+            }
+        }
+
+        function onUserAnswerChange(elem) {
+            let totalQuestions = Object.keys(CONFIG_TD.baremeQuestions || {}).length;
+            let repondues = 0;
+            document.querySelectorAll('[data-qid]').forEach(q => {
+                if (q.value && q.value.trim() !== '') repondues++;
+            });
+
+            const ratio = totalQuestions > 0 ? (repondues / totalQuestions) : 0;
+            const statusBadge = document.getElementById('dock-status-badge');
+            if (statusBadge && statusBadge.innerText !== 'VALIDÉ') {
+                statusBadge.innerText = `En cours (${repondues}/${totalQuestions})`;
+                statusBadge.className = 'dock-status-badge';
+                statusBadge.style.background = ratio === 1 ? '#eab308' : '#3b82f6';
+                statusBadge.style.color = '#ffffff';
+            }
+            mettreAJourAffichageIndices();
+        }
+
+        /* =========================================================================
+           8. LOUPE HAUTE DÉFINITION (x2.5) & BOUCLIER TRANSPARENT
+           ========================================================================= */
+        function basculerLoupe() {
+            loupeActive = !loupeActive;
+            const btn = document.getElementById('btn-dock-loupe');
+            const canvas = document.getElementById('loupe-canvas');
+
+            if (loupeActive) {
+                btn.style.background = '#16a34a';
+                btn.innerText = 'Loupe Active';
+            } else {
+                btn.style.background = '#0284c7';
+                btn.innerText = 'Activer Loupe';
+                if (canvas) canvas.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('mousemove', e => {
+            if (!loupeActive) return;
+            const canvas = document.getElementById('loupe-canvas');
+            if (!canvas) return;
+
+            const frame = e.target.closest('.plan-frame');
+            if (!frame) {
+                canvas.style.display = 'none';
+                return;
+            }
+
+            const img = frame.querySelector('img');
+            if (!img || !img.complete || img.naturalWidth === 0) {
+                canvas.style.display = 'none';
+                return;
+            }
+
+            canvas.style.display = 'block';
+            canvas.style.left = e.clientX + 'px';
+            canvas.style.top = e.clientY + 'px';
+
+            const ctx = canvas.getContext('2d');
+            const rect = img.getBoundingClientRect();
+            const relX = (e.clientX - rect.left) / rect.width;
+            const relY = (e.clientY - rect.top) / rect.height;
+
+            if (relX < 0 || relX > 1 || relY < 0 || relY > 1) {
+                canvas.style.display = 'none';
+                return;
+            }
+
+            const natX = relX * img.naturalWidth;
+            const natY = relY * img.naturalHeight;
+            const zoomLevel = 2.5;
+            const sW = canvas.width / zoomLevel;
+            const sH = canvas.height / zoomLevel;
+            const sX = Math.max(0, Math.min(img.naturalWidth - sW, natX - sW / 2));
+            const sY = Math.max(0, Math.min(img.naturalHeight - sH, natY - sH / 2));
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, sX, sY, sW, sH, 0, 0, canvas.width, canvas.height);
+        });
+
+        /* =========================================================================
+           9. MODALE ZOOM PLEIN ÉCRAN
+           ========================================================================= */
+        let currentZoom = 1.0;
+        let isPanning = false;
+        let startPanX = 0, startPanY = 0;
+        let panX = 0, panY = 0;
+
+        function ouvrirZoomPlan(src, titre) {
+            const modal = document.getElementById('zoom-modal');
+            const img = document.getElementById('zoom-modal-img');
+            const titleElem = document.getElementById('zoom-modal-title');
+            if (!modal || !img) return;
+
+            if (window.TD_IMAGES_DATA) {
+                const fname = src.split('/').pop().split('?')[0];
+                if (window.TD_IMAGES_DATA[fname]) {
+                    src = window.TD_IMAGES_DATA[fname];
+                }
+            }
+
+            img.src = src;
+            if (titleElem) titleElem.innerText = titre || "Visualiseur Haute Définition";
+            modal.style.display = 'flex';
+            zoomReinitialiser();
+        }
+
+        function fermerZoomPlan(e) {
+            if (e) e.stopPropagation();
+            const modal = document.getElementById('zoom-modal');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function zoomModifier(delta) {
+            currentZoom = Math.max(0.5, Math.min(4.5, currentZoom + delta));
+            appliquerZoom();
+        }
+
+        function zoomReinitialiser() {
+            currentZoom = 1.0;
+            panX = 0;
+            panY = 0;
+            appliquerZoom();
+        }
+
+        function appliquerZoom() {
+            const img = document.getElementById('zoom-modal-img');
+            if (img) {
+                img.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
+            }
+        }
+
+        function zoomStartPan(e) {
+            isPanning = true;
+            startPanX = e.clientX - panX;
+            startPanY = e.clientY - panY;
+            e.preventDefault();
+        }
+
+        document.addEventListener('mousemove', e => {
+            if (!isPanning) return;
+            panX = e.clientX - startPanX;
+            panY = e.clientY - startPanY;
+            appliquerZoom();
+        });
+
+        document.addEventListener('mouseup', () => {
+            isPanning = false;
+        });
+
+        /* =========================================================================
+           10. COMPÉTENCE POSTE DE TRAVAIL & CASES PROFESSEUR (MELEC C2 / MFER C4)
+           ========================================================================= */
+        function mettreAJourC2() {
+            const c1 = document.getElementById('check-c2-classeur');
+            const c2 = document.getElementById('check-c2-stylo');
+            const badge = document.getElementById('c2-status-badge');
+            const count = (c1 && c1.checked ? 1 : 0) + (c2 && c2.checked ? 1 : 0);
+
+            let palier = 'MAÎTRISE INSUFFISANTE';
+            let cls = 'eval-badge eval-rouge';
+            if (count === 2) {
+                cls = 'eval-badge eval-vert-fonce';
+                palier = 'TRÈS BONNE MAÎTRISE';
+            } else if (count === 1) {
+                cls = 'eval-badge eval-jaune';
+                palier = 'MAÎTRISE FRAGILE';
+            }
+
+            if (badge) {
+                badge.className = cls;
+                badge.innerText = palier;
+            }
+
+            // Mise à jour de la compétence organisation correspondante (C2 en MELEC, C4 en MFER)
+            const codeOrga = (CONFIG_TD.filiereCode === 'MELEC') ? 'c2' : 'c4';
+            const badgeTable = document.getElementById('eval-' + codeOrga + '-palier');
+            if (badgeTable) {
+                badgeTable.className = cls;
+                badgeTable.innerText = palier;
+            }
+        }
+
+        /* =========================================================================
+           11. MOTEUR D'ÉVALUATION ET DE CORRECTION LOCALE DES QUESTIONS
+           ========================================================================= */
+        function evaluerReponsesQuestions(reponses) {
+            let scoreBrut = 0.0;
+            const details = {};
+            const bareme = CONFIG_TD.baremeQuestions || {};
+
+            for (const [qid, attente] of Object.entries(bareme)) {
+                const repBrute = (reponses[qid] || '').trim();
+                let pts = 1.0;
+                let qType = 'text';
+
+                if (typeof attente === 'object' && attente !== null) {
+                    pts = parseFloat(attente.points !== undefined ? attente.points : 1.0);
+                    qType = attente.type || 'text';
+                }
+
+                let valAttendue = '';
+                let altValeurs = [];
+                if (typeof attente === 'object' && attente !== null) {
+                    valAttendue = attente.valeur !== undefined ? String(attente.valeur) : '';
+                    if (Array.isArray(attente.valeurs)) {
+                        altValeurs = attente.valeurs.map(v => String(v).trim().toLowerCase());
+                    }
+                } else {
+                    valAttendue = String(attente);
+                }
+
+                const repNorm = repBrute.toLowerCase();
+                const attNorm = valAttendue.trim().toLowerCase();
+                let isOk = false;
+
+                if (repNorm.length > 0) {
+                    if (repNorm === attNorm) {
+                        isOk = true;
+                    } else if (altValeurs.includes(repNorm)) {
+                        isOk = true;
+                    } else if (qType === 'number') {
+                        const repDigits = repNorm.replace(/[^0-9,\.\-+]/g, '').replace(',', '.');
+                        const attDigits = attNorm.replace(/[^0-9,\.\-+]/g, '').replace(',', '.');
+                        const numRep = parseFloat(repDigits);
+                        const numAtt = parseFloat(attDigits);
+                        if (!isNaN(numRep) && !isNaN(numAtt)) {
+                            if (Math.abs(numRep - numAtt) < 0.05) {
+                                isOk = true;
+                            } else if (numAtt > 1 && Math.abs(numRep * 100 - numAtt) < 0.05) {
+                                isOk = true;
+                            } else if (numRep > 1 && Math.abs(numRep - numAtt * 100) < 0.05) {
+                                isOk = true;
+                            }
+                        }
+                    } else if (qType === 'text') {
+                        const cleanRep = repNorm.replace(/[\s\-_]/g, '');
+                        const cleanAtt = attNorm.replace(/[\s\-_]/g, '');
+                        if (cleanRep === cleanAtt) {
+                            isOk = true;
+                        } else if (altValeurs.some(v => v.replace(/[\s\-_]/g, '') === cleanRep)) {
+                            isOk = true;
+                        }
+                    }
+                }
+
+                const ptsAttrib = isOk ? pts : 0.0;
+                scoreBrut += ptsAttrib;
+                details[qid] = {
+                    points: ptsAttrib,
+                    statut: isOk ? 'correct' : 'incorrect',
+                    commentaire: isOk ? 'Exact' : ('Attendu : ' + valAttendue)
+                };
+            }
+
+            const denom = CONFIG_TD.totalPointsBruts || 24.0;
+            const note20 = (scoreBrut / denom) * 20.0;
+            return { scoreBrut, note20, details, totalBrut: denom };
+        }
+
+        function insererFeedbackCorrection(elem, qid, feedbackDiv) {
+            const ancien = document.querySelector(`.correction-feedback[data-corr-qid="${qid}"]`);
+            if (ancien) ancien.remove();
+
+            const card = elem.closest('.question-card');
+            if (card) {
+                card.appendChild(feedbackDiv);
+            } else {
+                elem.insertAdjacentElement('afterend', feedbackDiv);
+            }
+        }
+
+        function appliquerCorrectionDossier(detailsQuestions) {
+            const bareme = CONFIG_TD.baremeQuestions || {};
+            for (const [qid, res] of Object.entries(detailsQuestions)) {
+                const elem = document.querySelector(`[data-qid="${qid}"]`);
+                if (!elem) continue;
+
+                const attente = bareme[qid] || {};
+                const ptsMax = parseFloat(attente.points !== undefined ? attente.points : 1.0);
+                const valAttendue = attente.valeur !== undefined ? attente.valeur : (attente.reponse || "");
+
+                elem.classList.remove('input-correct', 'input-partial', 'input-wrong');
+
+                const feedback = document.createElement('div');
+                feedback.className = 'correction-feedback';
+                feedback.setAttribute('data-corr-qid', qid);
+
+                const qLabel = elem.getAttribute('placeholder') || elem.getAttribute('data-label') || '';
+                let labelPrefix = '';
+                if (qLabel) {
+                    labelPrefix = `<strong>[${qLabel.replace(' (en cm)', '')}]</strong> `;
+                }
+
+                if (res.statut === 'correct') {
+                    elem.classList.add('input-correct');
+                    feedback.className += ' corr-correct';
+                    feedback.innerHTML = `${labelPrefix}<strong>Exact (+${ptsMax.toFixed(2)} pt) :</strong> ${valAttendue}`;
+                } else if (res.statut === 'partiel') {
+                    elem.classList.add('input-partial');
+                    feedback.className += ' corr-partial';
+                    feedback.innerHTML = `${labelPrefix}<strong>Partiel (+${res.points.toFixed(2)}/${ptsMax.toFixed(2)} pt) :</strong> Attendu : <em>${valAttendue}</em>. ${res.commentaire || ''}`;
+                } else {
+                    elem.classList.add('input-wrong');
+                    feedback.className += ' corr-wrong';
+                    feedback.innerHTML = `${labelPrefix}<strong>Incorrect (0.00/${ptsMax.toFixed(2)} pt) :</strong> Réponse attendue : <strong>${valAttendue}</strong>`;
+                }
+
+                insererFeedbackCorrection(elem, qid, feedback);
+                elem.setAttribute('readonly', 'true');
+                if (elem.tagName === 'SELECT') {
+                    elem.style.pointerEvents = 'none';
+                }
+            }
+        }
+
+        /* =========================================================================
+           12. GÉNÉRATION PDF A4 HAUTE FIDÉLITÉ (HTML2CANVAS & JSPDF)
+           ========================================================================= */
+        async function construireDossierCompletPDF() {
+            try {
+                const jsPDFClass = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
+                if (typeof html2canvas === 'undefined' || !jsPDFClass) {
+                    console.warn("Librairies PDF html2canvas ou jsPDF non chargées.");
+                    return null;
+                }
+
+                const pdf = new jsPDFClass({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                const wasSingleMode = document.body.classList.contains('mode-single');
+                if (wasSingleMode) document.body.classList.remove('mode-single');
+
+                if (window.TD_IMAGES_DATA) {
+                    document.querySelectorAll('img').forEach(img => {
+                        const src = img.getAttribute('src');
+                        if (src) {
+                            const filename = src.split('/').pop().split('?')[0];
+                            if (window.TD_IMAGES_DATA[filename]) {
+                                img.src = window.TD_IMAGES_DATA[filename];
+                            }
+                        }
+                    });
+                }
+
+                for (let i = 0; i < TOUTES_LES_PAGES.length; i++) {
+                    const pageElem = document.getElementById(TOUTES_LES_PAGES[i]);
+                    if (!pageElem) continue;
+
+                    const canvas = await html2canvas(pageElem, {
+                        scale: 1.8,
+                        useCORS: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff',
+                        logging: false
+                    });
+
+                    const imgData = canvas.toDataURL('image/jpeg', 0.88);
+                    if (i > 0) pdf.addPage('a4', 'portrait');
+                    pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+                }
+
+                if (wasSingleMode) document.body.classList.add('mode-single');
+                return pdf;
+            } catch (err) {
+                console.error("Erreur génération PDF :", err);
+                return null;
+            }
+        }
+
+        async function exporterDossierPDF() {
+            const btnDock = document.getElementById('btn-dock-pdf');
+            const originalText = btnDock ? btnDock.innerText : 'Enregistrer PDF';
+            if (btnDock) {
+                btnDock.innerText = 'Génération du PDF...';
+                btnDock.disabled = true;
+            }
+
+            try {
+                const pdf = await construireDossierCompletPDF();
+                if (!pdf) throw new Error("Échec d'initialisation du moteur PDF.");
+                const nomFichier = construireNomFichierPDF();
+                pdf.save(nomFichier);
+            } catch (err) {
+                alert("Une erreur est survenue lors de la création du PDF : " + err.message);
+            } finally {
+                if (btnDock) {
+                    btnDock.innerText = originalText;
+                    btnDock.disabled = false;
+                }
+            }
+        }
+
+        async function telechargerPDFSecoursLocal() {
+            const btnSecoursBox = document.getElementById('btn-secours-prof-box');
+            if (btnSecoursBox) btnSecoursBox.innerText = "Génération PDF...";
+
+            const reponses = {};
+            document.querySelectorAll('[data-qid]').forEach(elem => {
+                reponses[elem.getAttribute('data-qid')] = elem.value.trim();
+            });
+
+            evaluerLocalementSecours(reponses);
+
+            try {
+                await exporterDossierPDF();
+                if (btnSecoursBox) {
+                    btnSecoursBox.innerText = "PDF téléchargé";
+                    btnSecoursBox.style.background = "#16a34a";
+                }
+            } catch (err) {
+                alert("Erreur lors de l'export local : " + err.message);
+                if (btnSecoursBox) btnSecoursBox.innerText = "Réessayer PDF";
+            }
+        }
+
+        /* =========================================================================
+           13. VALIDATION PROFESSEUR (PIN 7049 & ÉVALUATION)
+           ========================================================================= */
+        async function validerTD() {
+            const inputCode = document.getElementById('prof-code');
+            const errorElem = document.getElementById('prof-error-msg');
+            const btnValider = document.getElementById('btn-valider-td');
+            const codeSaisi = inputCode ? inputCode.value.trim() : '';
+
+            if (errorElem) errorElem.style.display = 'none';
+
+            if (!verifierChampsIdentite()) {
+                if (errorElem) {
+                    errorElem.innerHTML = "<strong>Identification obligatoire !</strong> Veuillez renseigner le nom, prénom et classe en Page 1.";
+                    errorElem.style.display = 'block';
+                }
+                naviguerVersPage('page-1-garde');
+                return;
+            }
+
+            if (codeSaisi !== '7049') {
+                if (errorElem) {
+                    errorElem.innerText = "Code secret incorrect ! Appel de l'enseignant requis.";
+                    errorElem.style.display = 'block';
+                }
+                if (inputCode) inputCode.value = '';
+                return;
+            }
+
+            const reponses = {};
+            document.querySelectorAll('[data-qid]').forEach(elem => {
+                reponses[elem.getAttribute('data-qid')] = elem.value.trim();
+            });
+
+            evaluerLocalementSecours(reponses);
+
+            if (btnValider) btnValider.disabled = true;
+            if (inputCode) inputCode.disabled = true;
+
+            const validatedBox = document.getElementById('prof-validated-box');
+            if (validatedBox) validatedBox.style.display = 'block';
+
+            const filenameDisplay = document.getElementById('saved-filename-display');
+            if (filenameDisplay) filenameDisplay.innerText = construireNomFichierPDF();
+
+            const statusBadge = document.getElementById('dock-status-badge');
+            if (statusBadge) {
+                statusBadge.innerText = 'VALIDÉ';
+                statusBadge.className = 'dock-status-badge status-validated';
+                statusBadge.style.background = '#16a34a';
+            }
+
+            const btnDockPdf = document.getElementById('btn-dock-pdf');
+            if (btnDockPdf) {
+                btnDockPdf.disabled = false;
+                btnDockPdf.style.opacity = '1';
+                btnDockPdf.style.cursor = 'pointer';
+            }
+
+            const btnSecoursProf = document.getElementById('btn-secours-prof-box');
+            if (btnSecoursProf) btnSecoursProf.style.display = 'inline-block';
+        }
+
+        /* =========================================================================
+           14. CALCUL DES COMPÉTENCES & PALIERS ÉDUSCOL
+           ========================================================================= */
+        function determinerClassePalier(palierStr) {
+            const str = (palierStr || '').toUpperCase();
+            if (str.includes('TRÈS BONNE') || str.includes('TRES BONNE')) return 'eval-vert-fonce';
+            if (str.includes('SATISFAISANTE')) return 'eval-vert-clair';
+            if (str.includes('FRAGILE')) return 'eval-jaune';
+            return 'eval-rouge';
+        }
+
+        function palierDepuisNote(note) {
+            if (note >= 17.0) return "TRÈS BONNE MAÎTRISE";
+            if (note > 11.0) return "MAÎTRISE SATISFAISANTE";
+            if (note > 4.0) return "MAÎTRISE FRAGILE";
+            return "MAÎTRISE INSUFFISANTE";
+        }
+
+        function mettreAJourBadgesCompetences(competencesObj) {
+            if (!competencesObj) return;
+            for (const [code, palier] of Object.entries(competencesObj)) {
+                const badgeElem = document.getElementById('eval-' + code.toLowerCase() + '-palier');
+                if (badgeElem) {
+                    badgeElem.className = 'eval-badge ' + determinerClassePalier(palier);
+                    badgeElem.innerText = String(palier).toUpperCase();
+                }
+            }
+        }
+
+        function calculerCompetencesLocales(noteFinale) {
+            const c1Checked = document.getElementById('check-c2-classeur')?.checked;
+            const c2Checked = document.getElementById('check-c2-stylo')?.checked;
+            const countC2 = (c1Checked ? 1 : 0) + (c2Checked ? 1 : 0);
+            const palierC2 = countC2 === 2 ? 'TRÈS BONNE MAÎTRISE' : (countC2 === 1 ? 'MAÎTRISE FRAGILE' : 'MAÎTRISE INSUFFISANTE');
+            const palierNote = palierDepuisNote(noteFinale);
+
+            const compObj = {};
+            if (Array.isArray(CONFIG_TD.competences)) {
+                CONFIG_TD.competences.forEach(c => {
+                    if (c.mode === 'cases_prof' || c.code === 'C4' || (CONFIG_TD.filiereCode === 'MELEC' && c.code === 'C2')) {
+                        compObj[c.code] = palierC2;
+                    } else {
+                        compObj[c.code] = palierNote;
+                    }
+                });
+            }
+            return { compObj, palierC2, palierNote };
+        }
+
+        function evaluerLocalementSecours(reponses) {
+            const evalResult = evaluerReponsesQuestions(reponses);
+            appliquerCorrectionDossier(evalResult.details);
+
+            const scoreBrut = evalResult.scoreBrut;
+            const denom = evalResult.totalBrut;
+            const note20Brute = evalResult.note20;
+            const nbPayants = Math.max(0, indicesDebloquesSet.size - CONFIG_TD.indicesGratuits);
+            const penalite = nbPayants * CONFIG_TD.penaliteParIndice;
+            const noteFinale = Math.max(0.0, Math.min(20.0, Math.round((note20Brute - penalite) * 10) / 10));
+
+            const { compObj, palierNote } = calculerCompetencesLocales(noteFinale);
+
+            const noteElem = document.getElementById('global-score-converted');
+            if (noteElem) noteElem.innerText = noteFinale.toFixed(1) + " / 20";
+
+            const rawElem = document.getElementById('global-score-raw');
+            if (rawElem) rawElem.innerText = scoreBrut.toFixed(1) + " / " + denom.toFixed(1) + " pts";
+
+            const statusTextElem = document.getElementById('prof-eval-status-text');
+            if (statusTextElem) {
+                statusTextElem.innerHTML = "<span style='color: #15803d; font-weight: bold;'>Dossier validé et certifié conforme</span>";
+            }
+
+            mettreAJourBadgesCompetences(compObj);
+            mettreAJourC2();
+            mettreAJourAffichageIndices();
+        }
+
+        /* =========================================================================
+           15. INITIALISATION AU DOMCONTENTLOADED
+           ========================================================================= */
+        document.addEventListener('DOMContentLoaded', () => {
+            const titreOffP1 = document.getElementById('header-titre-officiel');
+            if (titreOffP1 && CONFIG_TD.titreOfficiel) titreOffP1.innerText = CONFIG_TD.titreOfficiel;
+
+            const titreOffP2 = document.getElementById('header-titre-officiel-p2');
+            if (titreOffP2 && CONFIG_TD.titreOfficiel) titreOffP2.innerText = CONFIG_TD.titreOfficiel;
+
+            const titreOffP3 = document.getElementById('header-titre-officiel-p3');
+            if (titreOffP3 && CONFIG_TD.titreOfficiel) titreOffP3.innerText = CONFIG_TD.titreOfficiel;
+
+            // Remplacement des images locales par Base64 si disponibles
+            if (window.TD_IMAGES_DATA) {
+                document.querySelectorAll('img').forEach(img => {
+                    const src = img.getAttribute('src');
+                    if (src) {
+                        const fname = src.split('/').pop().split('?')[0];
+                        if (window.TD_IMAGES_DATA[fname]) {
+                            img.src = window.TD_IMAGES_DATA[fname];
+                        }
+                    }
+                });
+            }
+
+            // Zoom molette sur visualiseur
+            const modalZoom = document.getElementById('zoom-modal');
+            if (modalZoom) {
+                modalZoom.addEventListener('wheel', (e) => {
+                    const delta = e.deltaY < 0 ? 0.15 : -0.15;
+                    zoomModifier(delta);
+                    e.preventDefault();
+                }, { passive: false });
+            }
+
+            // Initialisation de l'identité et adaptation de la filière (par défaut 1MELEC1)
+            mettreAJourIdentite();
+            onUserAnswerChange(null);
+            mettreAJourC2();
+        });
+    </script>
+</body>
+</html>
